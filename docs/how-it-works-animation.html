@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiroFish — How It Works</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0a0e27;
+    color: #e0e6ff;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 60px 20px 30px;
+    position: relative;
+  }
+
+  .header h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #00d4ff, #7b2fff, #ff2d95);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: titlePulse 3s ease-in-out infinite;
+  }
+
+  .header .subtitle {
+    font-size: 1.2rem;
+    color: #8892b0;
+    margin-top: 12px;
+    opacity: 0;
+    animation: fadeUp 1s 0.5s forwards;
+  }
+
+  @keyframes titlePulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3); }
+  }
+
+  /* Fish swimming across header */
+  .fish-swim {
+    position: absolute;
+    top: 30px;
+    font-size: 2rem;
+    animation: swimAcross 8s linear infinite;
+    opacity: 0.4;
+  }
+
+  @keyframes swimAcross {
+    0% { left: -5%; opacity: 0; }
+    10% { opacity: 0.4; }
+    90% { opacity: 0.4; }
+    100% { left: 105%; opacity: 0; }
+  }
+
+  /* Pipeline container */
+  .pipeline {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 30px 80px;
+    position: relative;
+  }
+
+  /* Central connecting line */
+  .pipeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, transparent, #7b2fff 10%, #00d4ff 50%, #ff2d95 90%, transparent);
+    transform: translateX(-50%);
+    opacity: 0.4;
+  }
+
+  /* Data flow particles on the line */
+  .flow-particle {
+    position: absolute;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background: #00d4ff;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 12px #00d4ff;
+    animation: flowDown 4s linear infinite;
+  }
+
+  .flow-particle:nth-child(2) { animation-delay: 1.3s; background: #7b2fff; box-shadow: 0 0 12px #7b2fff; }
+  .flow-particle:nth-child(3) { animation-delay: 2.6s; background: #ff2d95; box-shadow: 0 0 12px #ff2d95; }
+
+  @keyframes flowDown {
+    0% { top: 0; opacity: 0; }
+    5% { opacity: 1; }
+    95% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  /* Step card */
+  .step {
+    position: relative;
+    margin-bottom: 60px;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .step.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .step:nth-child(odd) .step-card { margin-left: auto; margin-right: 55%; }
+  .step:nth-child(even) .step-card { margin-left: 55%; margin-right: auto; }
+
+  .step-card {
+    background: linear-gradient(135deg, rgba(20, 25, 60, 0.9), rgba(15, 20, 50, 0.95));
+    border: 1px solid rgba(123, 47, 255, 0.3);
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 420px;
+    position: relative;
+    backdrop-filter: blur(10px);
+    transition: all 0.4s ease;
+  }
+
+  .step-card:hover {
+    border-color: rgba(0, 212, 255, 0.6);
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
+    transform: scale(1.02);
+  }
+
+  /* Step number badge */
+  .step-number {
+    position: absolute;
+    top: -18px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.9rem;
+    z-index: 2;
+  }
+
+  .step:nth-child(odd) .step-number { right: -50px; }
+  .step:nth-child(even) .step-number { left: -50px; }
+
+  .step-number.s1 { background: linear-gradient(135deg, #00d4ff, #0090ff); }
+  .step-number.s2 { background: linear-gradient(135deg, #7b2fff, #a855f7); }
+  .step-number.s3 { background: linear-gradient(135deg, #ff2d95, #f43f5e); }
+  .step-number.s4 { background: linear-gradient(135deg, #00d4ff, #7b2fff); }
+  .step-number.s5 { background: linear-gradient(135deg, #ff2d95, #ff8a00); }
+
+  .step-icon {
+    font-size: 2.2rem;
+    margin-bottom: 12px;
+  }
+
+  .step-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .step-desc {
+    font-size: 0.9rem;
+    color: #8892b0;
+    line-height: 1.6;
+  }
+
+  /* Animated mini-visualizations inside cards */
+  .mini-viz {
+    margin-top: 18px;
+    height: 60px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  /* Step 1: Document parsing animation */
+  .doc-lines .line {
+    height: 3px;
+    margin: 5px 10px;
+    border-radius: 2px;
+    background: #00d4ff;
+    opacity: 0.5;
+    animation: scanLine 2s ease-in-out infinite;
+  }
+  .doc-lines .line:nth-child(1) { width: 80%; animation-delay: 0s; }
+  .doc-lines .line:nth-child(2) { width: 60%; animation-delay: 0.3s; }
+  .doc-lines .line:nth-child(3) { width: 90%; animation-delay: 0.6s; }
+  .doc-lines .line:nth-child(4) { width: 45%; animation-delay: 0.9s; }
+  .doc-lines .line:nth-child(5) { width: 70%; animation-delay: 1.2s; }
+  .doc-lines .line:nth-child(6) { width: 55%; animation-delay: 1.5s; }
+
+  @keyframes scanLine {
+    0%, 100% { opacity: 0.3; background: #1a2040; }
+    50% { opacity: 1; background: #00d4ff; }
+  }
+
+  /* Step 2: Graph building animation */
+  .graph-build {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .graph-node {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    position: absolute;
+    animation: nodeAppear 3s ease-in-out infinite;
+  }
+
+  .graph-node:nth-child(1) { background: #00d4ff; left: 20%; top: 20%; animation-delay: 0s; }
+  .graph-node:nth-child(2) { background: #7b2fff; left: 60%; top: 15%; animation-delay: 0.4s; }
+  .graph-node:nth-child(3) { background: #ff2d95; left: 40%; top: 55%; animation-delay: 0.8s; }
+  .graph-node:nth-child(4) { background: #00d4ff; left: 75%; top: 50%; animation-delay: 1.2s; }
+  .graph-node:nth-child(5) { background: #a855f7; left: 15%; top: 60%; animation-delay: 1.6s; }
+
+  .graph-edge {
+    position: absolute;
+    height: 1px;
+    background: rgba(123, 47, 255, 0.6);
+    transform-origin: left center;
+    animation: edgeGrow 3s ease-in-out infinite;
+  }
+
+  .graph-edge:nth-child(6) { left: 24%; top: 25%; width: 35%; transform: rotate(-10deg); animation-delay: 0.3s; }
+  .graph-edge:nth-child(7) { left: 43%; top: 40%; width: 20%; transform: rotate(45deg); animation-delay: 0.7s; }
+  .graph-edge:nth-child(8) { left: 18%; top: 50%; width: 25%; transform: rotate(20deg); animation-delay: 1.1s; }
+  .graph-edge:nth-child(9) { left: 50%; top: 45%; width: 28%; transform: rotate(-15deg); animation-delay: 1.5s; }
+
+  @keyframes nodeAppear {
+    0%, 100% { transform: scale(0.6); opacity: 0.4; }
+    50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 10px currentColor; }
+  }
+
+  @keyframes edgeGrow {
+    0%, 100% { opacity: 0; transform: scaleX(0); }
+    30%, 70% { opacity: 0.8; transform: scaleX(1); }
+  }
+
+  /* Step 3: Agent profiles */
+  .agent-spawn {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    align-items: center;
+    height: 100%;
+    padding: 0 10px;
+  }
+
+  .agent-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    animation: agentPop 2.5s ease-in-out infinite;
+  }
+
+  .agent-avatar:nth-child(1) { background: rgba(0, 212, 255, 0.2); border: 2px solid #00d4ff; animation-delay: 0s; }
+  .agent-avatar:nth-child(2) { background: rgba(123, 47, 255, 0.2); border: 2px solid #7b2fff; animation-delay: 0.4s; }
+  .agent-avatar:nth-child(3) { background: rgba(255, 45, 149, 0.2); border: 2px solid #ff2d95; animation-delay: 0.8s; }
+  .agent-avatar:nth-child(4) { background: rgba(255, 138, 0, 0.2); border: 2px solid #ff8a00; animation-delay: 1.2s; }
+  .agent-avatar:nth-child(5) { background: rgba(168, 85, 247, 0.2); border: 2px solid #a855f7; animation-delay: 1.6s; }
+
+  @keyframes agentPop {
+    0%, 100% { transform: scale(0.7); opacity: 0.3; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+
+  /* Step 4: Social simulation */
+  .social-sim {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+    padding: 5px;
+  }
+
+  .platform-box {
+    text-align: center;
+    font-size: 0.65rem;
+    color: #8892b0;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .platform-box .icon { font-size: 1.4rem; margin-bottom: 2px; }
+
+  .message-bubble {
+    position: absolute;
+    font-size: 0.6rem;
+    padding: 3px 8px;
+    border-radius: 10px;
+    background: rgba(123, 47, 255, 0.3);
+    border: 1px solid rgba(123, 47, 255, 0.5);
+    white-space: nowrap;
+    animation: bubbleFloat 3s ease-in-out infinite;
+  }
+
+  .message-bubble:nth-child(3) { left: 30%; top: 5px; animation-delay: 0s; }
+  .message-bubble:nth-child(4) { left: 55%; top: 35px; animation-delay: 1s; background: rgba(0, 212, 255, 0.3); border-color: rgba(0, 212, 255, 0.5); }
+  .message-bubble:nth-child(5) { left: 20%; top: 40px; animation-delay: 2s; background: rgba(255, 45, 149, 0.3); border-color: rgba(255, 45, 149, 0.5); }
+
+  @keyframes bubbleFloat {
+    0%, 100% { opacity: 0; transform: translateY(5px) scale(0.8); }
+    20%, 80% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Step 5: Report */
+  .report-gen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+  }
+
+  .report-bar {
+    width: 20%;
+    border-radius: 3px 3px 0 0;
+    position: relative;
+    bottom: 0;
+    animation: barGrow 2.5s ease-in-out infinite;
+  }
+
+  .report-bar:nth-child(1) { background: #00d4ff; height: 60%; animation-delay: 0s; }
+  .report-bar:nth-child(2) { background: #7b2fff; height: 80%; animation-delay: 0.3s; }
+  .report-bar:nth-child(3) { background: #ff2d95; height: 45%; animation-delay: 0.6s; }
+  .report-bar:nth-child(4) { background: #ff8a00; height: 70%; animation-delay: 0.9s; }
+
+  @keyframes barGrow {
+    0%, 100% { transform: scaleY(0.3); opacity: 0.4; }
+    50% { transform: scaleY(1); opacity: 1; }
+  }
+
+  /* Architecture overview at the bottom */
+  .arch-section {
+    max-width: 900px;
+    margin: 0 auto 80px;
+    padding: 0 30px;
+    text-align: center;
+  }
+
+  .arch-section h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #00d4ff, #7b2fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+  }
+
+  .tech-card {
+    background: rgba(20, 25, 60, 0.8);
+    border: 1px solid rgba(123, 47, 255, 0.2);
+    border-radius: 12px;
+    padding: 20px 16px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s ease;
+  }
+
+  .tech-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .tech-card:hover {
+    border-color: rgba(0, 212, 255, 0.5);
+    box-shadow: 0 4px 20px rgba(0, 212, 255, 0.1);
+  }
+
+  .tech-card .tech-icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .tech-card .tech-name { font-size: 0.85rem; font-weight: 600; color: #e0e6ff; }
+  .tech-card .tech-role { font-size: 0.75rem; color: #6b7394; margin-top: 4px; }
+
+  /* Fade up animation */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .header h1 { font-size: 2.2rem; }
+    .step:nth-child(odd) .step-card,
+    .step:nth-child(even) .step-card {
+      margin: 0 auto;
+      max-width: 90%;
+    }
+    .step-number { display: none; }
+    .pipeline::before { display: none; }
+    .flow-particle { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="fish-swim">&#x1F41F;</div>
+  <h1>MiroFish</h1>
+  <p class="subtitle">AI Prediction Engine &mdash; Multi-Agent Digital Worlds</p>
+</div>
+
+<div class="pipeline">
+  <!-- Flow particles on center line -->
+  <div class="flow-particle"></div>
+  <div class="flow-particle"></div>
+  <div class="flow-particle"></div>
+
+  <!-- Step 1 -->
+  <div class="step" data-delay="0">
+    <div class="step-card">
+      <div class="step-number s1">1</div>
+      <div class="step-icon">&#128196;</div>
+      <div class="step-title">Ontology Generation</div>
+      <div class="step-desc">
+        Upload documents (PDF, Markdown, TXT). The LLM analyzes your content and simulation goal
+        to infer entity types, relationship types, and the ontology schema that defines your digital world.
+      </div>
+      <div class="mini-viz doc-lines">
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step" data-delay="150">
+    <div class="step-card">
+      <div class="step-number s2">2</div>
+      <div class="step-icon">&#x1F578;&#xFE0F;</div>
+      <div class="step-title">Knowledge Graph Construction</div>
+      <div class="step-desc">
+        Documents are chunked and fed into Zep Cloud. A rich knowledge graph emerges &mdash;
+        entities, relationships, and facts become queryable nodes and edges.
+      </div>
+      <div class="mini-viz graph-build">
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-node"></div>
+        <div class="graph-edge"></div>
+        <div class="graph-edge"></div>
+        <div class="graph-edge"></div>
+        <div class="graph-edge"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step" data-delay="300">
+    <div class="step-card">
+      <div class="step-number s3">3</div>
+      <div class="step-icon">&#x1F9EC;</div>
+      <div class="step-title">Agent Profile Generation</div>
+      <div class="step-desc">
+        Entities become autonomous agents. Each gets a unique personality, beliefs,
+        communication style, and social media personas for Twitter and Reddit.
+      </div>
+      <div class="mini-viz agent-spawn">
+        <div class="agent-avatar">&#x1F468;</div>
+        <div class="agent-avatar">&#x1F469;</div>
+        <div class="agent-avatar">&#x1F474;</div>
+        <div class="agent-avatar">&#x1F467;</div>
+        <div class="agent-avatar">&#x1F9D1;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="step" data-delay="450">
+    <div class="step-card">
+      <div class="step-number s4">4</div>
+      <div class="step-icon">&#x1F30D;</div>
+      <div class="step-title">Dual-Platform Simulation</div>
+      <div class="step-desc">
+        Agents interact across simulated Twitter and Reddit &mdash; posting, replying,
+        liking, following. Each round updates their memory graph in real time.
+      </div>
+      <div class="mini-viz social-sim">
+        <div class="platform-box"><div class="icon">&#x1F426;</div>Twitter</div>
+        <div class="platform-box"><div class="icon">&#x1F4AC;</div>Reddit</div>
+        <div class="message-bubble">I think...</div>
+        <div class="message-bubble">Agreed!</div>
+        <div class="message-bubble">But what if...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5 -->
+  <div class="step" data-delay="600">
+    <div class="step-card">
+      <div class="step-number s5">5</div>
+      <div class="step-icon">&#x1F4CA;</div>
+      <div class="step-title">Report &amp; Interaction</div>
+      <div class="step-desc">
+        A ReACT-based agent queries the simulation graph, analyzes dynamics,
+        and generates a multi-section prediction report. Then chat with any agent to explore deeper.
+      </div>
+      <div class="mini-viz report-gen">
+        <div class="report-bar"></div>
+        <div class="report-bar"></div>
+        <div class="report-bar"></div>
+        <div class="report-bar"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tech stack section -->
+<div class="arch-section">
+  <h2>Technology Stack</h2>
+  <div class="tech-grid">
+    <div class="tech-card" data-delay="0">
+      <div class="tech-icon">&#x1F5BC;&#xFE0F;</div>
+      <div class="tech-name">Vue 3 + Vite</div>
+      <div class="tech-role">Frontend UI</div>
+    </div>
+    <div class="tech-card" data-delay="100">
+      <div class="tech-icon">&#x1F40D;</div>
+      <div class="tech-name">Flask</div>
+      <div class="tech-role">Backend API</div>
+    </div>
+    <div class="tech-card" data-delay="200">
+      <div class="tech-icon">&#x1F9E0;</div>
+      <div class="tech-name">LLM (Qwen/GPT)</div>
+      <div class="tech-role">Intelligence Layer</div>
+    </div>
+    <div class="tech-card" data-delay="300">
+      <div class="tech-icon">&#x1F578;&#xFE0F;</div>
+      <div class="tech-name">Zep Cloud</div>
+      <div class="tech-role">Graph Memory</div>
+    </div>
+    <div class="tech-card" data-delay="400">
+      <div class="tech-icon">&#x1F3DC;&#xFE0F;</div>
+      <div class="tech-name">OASIS (CAMEL-AI)</div>
+      <div class="tech-role">Agent Simulation</div>
+    </div>
+    <div class="tech-card" data-delay="500">
+      <div class="tech-icon">&#x1F433;</div>
+      <div class="tech-name">Docker</div>
+      <div class="tech-role">Deployment</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Intersection Observer for scroll-triggered animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const delay = parseInt(entry.target.dataset.delay || 0);
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, delay);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  document.querySelectorAll('.step, .tech-card').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
