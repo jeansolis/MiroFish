@@ -23,7 +23,6 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from './api/index.js'
 
 const loading = ref(true)
 const needsAuth = ref(false)
@@ -40,7 +39,8 @@ onMounted(async () => {
       loading.value = false
       return
     }
-    const { data } = await axios.get('/api/auth/check')
+    const res = await fetch('/api/auth/check')
+    const data = await res.json()
     needsAuth.value = data.required
     if (!data.required) authenticated.value = true
   } catch {
@@ -54,10 +54,17 @@ async function login() {
   error.value = false
   submitting.value = true
   try {
-    const { data } = await axios.post('/api/auth/verify', { password: password.value })
+    const res = await fetch('/api/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: password.value })
+    })
+    const data = await res.json()
     if (data.authenticated) {
       authenticated.value = true
       sessionStorage.setItem('mirofish_auth', '1')
+    } else {
+      error.value = true
     }
   } catch {
     error.value = true
