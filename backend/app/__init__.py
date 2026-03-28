@@ -68,6 +68,22 @@ def create_app(config_class=Config):
     app.register_blueprint(simulation_bp, url_prefix='/api/simulation')
     app.register_blueprint(report_bp, url_prefix='/api/report')
     
+    # 认证接口
+    @app.route('/api/auth/verify', methods=['POST'])
+    def auth_verify():
+        app_password = os.environ.get('APP_PASSWORD', '')
+        if not app_password:
+            return {'authenticated': True}
+        data = request.get_json(silent=True) or {}
+        if data.get('password') == app_password:
+            return {'authenticated': True}
+        return {'authenticated': False}, 401
+
+    @app.route('/api/auth/check')
+    def auth_check():
+        app_password = os.environ.get('APP_PASSWORD', '')
+        return {'required': bool(app_password)}
+
     # 健康检查
     @app.route('/health')
     def health():
