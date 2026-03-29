@@ -1150,25 +1150,25 @@ Return a JSON format sub-query list."""
         limit: int = 50
     ) -> PanoramaResult:
         """
-        【PanoramaSearch - 广度搜索】
-        
-        Retrieved全貌视图，Including所有相关content和历史/过期info：
-        1. Retrieved所有相关nodes
-        2. Retrieved所有边（Including已过期/失效的）
-        3. 分类整理当前有效和历史info
-        
-        这工具适用于需要了解事件全貌、追踪演变过程的场景。
-        
+        [PanoramaSearch - Breadth Search]
+
+        Retrieve full panoramic view, including all related content and historical/expired info:
+        1. Retrieve all related nodes
+        2. Retrieve all edges (including expired/invalidated)
+        3. Categorize current valid and historical info
+
+        This tool is suitable for understanding the full picture and tracking evolution of events.
+
         Args:
             graph_id: Graph ID
-            query: Search query（用于相关性排序）
-            include_expired: 是否包含过期content（DefaultTrue）
-            limit: Number of results to return限制
-            
+            query: Search query (for relevance sorting)
+            include_expired: Whether to include expired content (default True)
+            limit: Number of results to return limit
+
         Returns:
             PanoramaResult: Breadth search result
         """
-        logger.info(f"PanoramaSearch 广度搜索: {query[:50]}...")
+        logger.info(f"PanoramaSearch breadth search: {query[:50]}...")
         
         result = PanoramaResult(query=query)
         
@@ -1178,12 +1178,12 @@ Return a JSON format sub-query list."""
         result.all_nodes = all_nodes
         result.total_nodes = len(all_nodes)
         
-        # Retrieved所有边（包含时间info）
+        # Retrieve all edges (with temporal info)
         all_edges = self.get_all_edges(graph_id, include_temporal=True)
         result.all_edges = all_edges
         result.total_edges = len(all_edges)
         
-        # 分类事实
+        # Categorize facts
         active_facts = []
         historical_facts = []
         
@@ -1191,24 +1191,24 @@ Return a JSON format sub-query list."""
             if not edge.fact:
                 continue
             
-            # 为事实添加Entityname
+            # Add entity names to facts
             source_name = node_map.get(edge.source_node_uuid, NodeInfo('', '', [], '', {})).name or edge.source_node_uuid[:8]
             target_name = node_map.get(edge.target_node_uuid, NodeInfo('', '', [], '', {})).name or edge.target_node_uuid[:8]
             
-            # 判断是否过期/失效
+            # Check if expired/invalidated
             is_historical = edge.is_expired or edge.is_invalid
             
             if is_historical:
-                # 历史/过期事实，添加时间标记
+                # Historical/expired fact, add time markers
                 valid_at = edge.valid_at or "Unknown"
                 invalid_at = edge.invalid_at or edge.expired_at or "Unknown"
                 fact_with_time = f"[{valid_at} - {invalid_at}] {edge.fact}"
                 historical_facts.append(fact_with_time)
             else:
-                # 当前有效事实
+                # Currently valid fact
                 active_facts.append(edge.fact)
         
-        # 基于query进行相关性排序
+        # Sort by relevance to query
         query_lower = query.lower()
         keywords = [w.strip() for w in query_lower.replace(',', ' ').replace('，', ' ').split() if len(w.strip()) > 1]
         
@@ -1222,7 +1222,7 @@ Return a JSON format sub-query list."""
                     score += 10
             return score
         
-        # 排序并限制数量
+        # Sort and limit count
         active_facts.sort(key=relevance_score, reverse=True)
         historical_facts.sort(key=relevance_score, reverse=True)
         
@@ -1231,7 +1231,7 @@ Return a JSON format sub-query list."""
         result.active_count = len(active_facts)
         result.historical_count = len(historical_facts)
         
-        logger.info(f"PanoramaSearch完成: {result.active_count}条有效, {result.historical_count}条历史")
+        logger.info(f"PanoramaSearch complete: {result.active_count} active, {result.historical_count} historical")
         return result
     
     def quick_search(
@@ -1241,24 +1241,24 @@ Return a JSON format sub-query list."""
         limit: int = 10
     ) -> SearchResult:
         """
-        【QuickSearch - 简单搜索】
-        
-        快速、轻量级的检索工具：
-        1. 直接调用Zep语义搜索
-        2. return最相关的result
-        3. 适用于简单、直接的检索需求
-        
+        [QuickSearch - Simple Search]
+
+        Fast, lightweight retrieval tool:
+        1. Directly calls Zep semantic search
+        2. Returns most relevant results
+        3. Suitable for simple, direct retrieval needs
+
         Args:
             graph_id: Graph ID
             query: Search query
             limit: Number of results to return
-            
+
         Returns:
             SearchResult: Search result
         """
-        logger.info(f"QuickSearch 简单搜索: {query[:50]}...")
-        
-        # 直接调用现有的search_graphmethod
+        logger.info(f"QuickSearch simple search: {query[:50]}...")
+
+        # Directly call existing search_graph method
         result = self.search_graph(
             graph_id=graph_id,
             query=query,
@@ -1266,7 +1266,7 @@ Return a JSON format sub-query list."""
             scope="edges"
         )
         
-        logger.info(f"QuickSearch完成: {result.total_count}条result")
+        logger.info(f"QuickSearch complete: {result.total_count} results")
         return result
     
     def interview_agents(
@@ -1278,53 +1278,53 @@ Return a JSON format sub-query list."""
         custom_questions: List[str] = None
     ) -> InterviewResult:
         """
-        【InterviewAgents - 深度采访】
-        
-        调用真实的OASIS采访API，采访模拟中currently运行的Agent：
+        [InterviewAgents - Deep Interview]
+
+        Calls real OASIS interview API to interview currently running Agents in simulation:
         1. Automatically read persona files to understand all simulation Agents
-        2. 使用LLM分析采访需求，智能选择最相关的Agent
-        3. 使用LLM生成Interview question
-        4. 调用 /api/simulation/interview/batch endpoint进行真实采访（双平台同时采访）
-        5. 整合所有Interview result，生成采访报告
-        
-        【重要】此功能需要模拟环境处于运行status（OASIS环境未关闭）
-        
+        2. Use LLM to analyze interview needs, intelligently select most relevant Agents
+        3. Use LLM to generate interview questions
+        4. Call /api/simulation/interview/batch endpoint for real interviews (dual-platform simultaneous)
+        5. Integrate all interview results, generate interview report
+
+        [Important] This feature requires the simulation environment to be running (OASIS environment not closed)
+
         [Use Cases]
-        - 需要从不同角色视角了解事件看法
-        - 需要收集多方意见和观点
-        - 需要Retrieved模拟Agent的真实回答（非LLM模拟）
-        
+        - Need different role perspectives on events
+        - Need to collect multi-party opinions and viewpoints
+        - Need real Agent responses (not LLM simulated)
+
         Args:
-            simulation_id: Simulation ID（用于定位人设file和调用采访API）
-            interview_requirement: 采访需求description（非结构化，如"了解Student对事件的看法"）
-            simulation_requirement: Simulation requirement背景(optional)
-            max_agents: 最多采访的Agent数量
-            custom_questions: 自定义Interview question（Options，若不提供则自动生成）
-            
+            simulation_id: Simulation ID (for locating persona files and calling interview API)
+            interview_requirement: Interview requirement description (unstructured, e.g., "understand student views on event")
+            simulation_requirement: Simulation requirement background (optional)
+            max_agents: Maximum number of Agents to interview
+            custom_questions: Custom interview questions (optional, auto-generated if not provided)
+
         Returns:
             InterviewResult: Interview result
         """
         from .simulation_runner import SimulationRunner
         
-        logger.info(f"InterviewAgents 深度采访（真实API）: {interview_requirement[:50]}...")
+        logger.info(f"InterviewAgents deep interview (real API): {interview_requirement[:50]}...")
         
         result = InterviewResult(
             interview_topic=interview_requirement,
             interview_questions=custom_questions or []
         )
         
-        # Step 1: 读取人设file
+        # Step 1: Load persona files
         profiles = self._load_agent_profiles(simulation_id)
-        
+
         if not profiles:
-            logger.warning(f"未找到模拟 {simulation_id} 的人设file")
-            result.summary = "未找到可采访的Agent人设file"
+            logger.warning(f"No persona files found for simulation {simulation_id}")
+            result.summary = "No Agent persona files found for interview"
             return result
-        
+
         result.total_agents = len(profiles)
-        logger.info(f"加载到 {len(profiles)} Agent人设")
-        
-        # Step 2: 使用LLM选择要采访的Agent（returnagent_idlist）
+        logger.info(f"Loaded {len(profiles)} Agent personas")
+
+        # Step 2: Use LLM to select Agents for interview (return agent_id list)
         selected_agents, selected_indices, selection_reasoning = self._select_agents_for_interview(
             profiles=profiles,
             interview_requirement=interview_requirement,
@@ -1334,37 +1334,37 @@ Return a JSON format sub-query list."""
         
         result.selected_agents = selected_agents
         result.selection_reasoning = selection_reasoning
-        logger.info(f"选择了 {len(selected_agents)} Agent进行采访: {selected_indices}")
-        
-        # Step 3: 生成Interview question（if没有提供）
+        logger.info(f"Selected {len(selected_agents)} Agents for interview: {selected_indices}")
+
+        # Step 3: Generate interview questions (if not provided)
         if not result.interview_questions:
             result.interview_questions = self._generate_interview_questions(
                 interview_requirement=interview_requirement,
                 simulation_requirement=simulation_requirement,
                 selected_agents=selected_agents
             )
-            logger.info(f"生成了 {len(result.interview_questions)} Interview question")
-        
-        # 将问题合并为一采访prompt
+            logger.info(f"Generated {len(result.interview_questions)} interview questions")
+
+        # Combine questions into a single interview prompt
         combined_prompt = "\n".join([f"{i+1}. {q}" for i, q in enumerate(result.interview_questions)])
-        
-        # 添加优化前缀，约束Agent回复格式
+
+        # Add optimization prefix to constrain Agent response format
         INTERVIEW_PROMPT_PREFIX = (
-            "你currently接受一次采访。请结合你的人设、所有的过往记忆与行动，"
-            "以纯文本方式直接回答以下问题。\n"
-            "回复要求：\n"
-            "1. 直接用自然语言回答，不要调用任何工具\n"
-            "2. 不要returnJSON格式或工具调用格式\n"
-            "3. 不要使用Markdowntitle（如#、##、###）\n"
-            "4. 按问题编号逐一回答，每回答以「问题X：」开头（X为问题编号）\n"
-            "5. 每问题的回答之间用空行分隔\n"
-            "6. 回答要有实质content，每问题至少回答2-3句话\n\n"
+            "You are currently being interviewed. Please combine your persona, all past memories and actions, "
+            "and directly answer the following questions in plain text.\n"
+            "Response requirements:\n"
+            "1. Answer directly in natural language, do not call any tools\n"
+            "2. Do not return JSON format or tool call format\n"
+            "3. Do not use Markdown headings (like #, ##, ###)\n"
+            "4. Answer each question by number, starting each answer with 'Question X:' (X is the question number)\n"
+            "5. Separate answers between questions with blank lines\n"
+            "6. Answers should have substantive content, at least 2-3 sentences per question\n\n"
         )
         optimized_prompt = f"{INTERVIEW_PROMPT_PREFIX}{combined_prompt}"
         
-        # Step 4: 调用真实的采访API（不指定platform，Default双平台同时采访）
+        # Step 4: Call real interview API (no platform specified, default dual-platform simultaneous)
         try:
-            # 构建批量Interview list（不指定platform，双平台采访）
+            # Build batch interview list (no platform specified, dual-platform interview)
             interviews_request = []
             for agent_idx in selected_indices:
                 interviews_request.append({
