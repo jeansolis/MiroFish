@@ -15,7 +15,7 @@
             :class="{ active: viewMode === mode }"
             @click="viewMode = mode"
           >
-            {{ { graph: '图谱', split: '双栏', workbench: '工作台' }[mode] }}
+            {{ { graph: 'Graph', split: 'Split', workbench: 'Workbench' }[mode] }}
           </button>
         </div>
       </div>
@@ -23,7 +23,7 @@
       <div class="header-right">
         <div class="workflow-step">
           <span class="step-num">Step 3/5</span>
-          <span class="step-name">开始模拟</span>
+          <span class="step-name">Simulation</span>
         </div>
         <div class="step-divider"></div>
         <span class="status-indicator" :class="statusClass">
@@ -47,7 +47,7 @@
         />
       </div>
 
-      <!-- Right Panel: Step3 开始模拟 -->
+      <!-- Right Panel: Step3 Simulation -->
       <div class="panel-wrapper right" :style="rightPanelStyle">
         <Step3Simulation
           :simulationId="currentSimulationId"
@@ -87,9 +87,9 @@ const viewMode = ref('split')
 
 // Data State
 const currentSimulationId = ref(route.params.simulationId)
-// 直接在初始化时从 query 参数获取 maxRounds，确保子组件能立即获取到值
+// Read maxRounds from query params at init so child components have access immediately
 const maxRounds = ref(route.query.maxRounds ? parseInt(route.query.maxRounds) : null)
-const minutesPerRound = ref(30) // 默认每轮30分钟
+const minutesPerRound = ref(30) // Default 30 minutes per round
 const projectData = ref(null)
 const graphData = ref(null)
 const graphLoading = ref(false)
