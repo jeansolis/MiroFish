@@ -226,18 +226,18 @@ const handleEnterEnvSetup = async () => {
     })
     
     if (res.success && res.data?.simulation_id) {
-      // 跳转到 simulation 页面
+      // Navigate to simulation page
       router.push({
         name: 'Simulation',
         params: { simulationId: res.data.simulation_id }
       })
     } else {
-      console.error('创建模拟失败:', res.error)
-      alert('创建模拟失败: ' + (res.error || '未知错误'))
+      console.error('Failed to create simulation:', res.error)
+      alert('Failed to create simulation: ' + (res.error || 'Unknown error'))
     }
   } catch (err) {
-    console.error('创建模拟异常:', err)
-    alert('创建模拟异常: ' + err.message)
+    console.error('Simulation creation error:', err)
+    alert('Simulation creation error: ' + err.message)
   } finally {
     creatingSimulation.value = false
   }

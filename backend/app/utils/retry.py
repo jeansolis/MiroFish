@@ -22,16 +22,16 @@ def retry_with_backoff(
     on_retry: Optional[Callable[[Exception, int], None]] = None
 ):
     """
-    带指数退避的重试装饰器
+    Retry decorator with exponential backoff
     
     Args:
-        max_retries: 最大重试次数
-        initial_delay: 初始延迟（秒）
-        max_delay: 最大延迟（秒）
-        backoff_factor: 退避因子
+        max_retries: Maximum retry count
+        initial_delay: Initial delay (seconds)
+        max_delay: Maximum delay (seconds)
+        backoff_factor: Backoff factor
         jitter: 是否添加随机抖动
-        exceptions: 需要重试的异常类型
-        on_retry: 重试时的回调函数 (exception, retry_count)
+        exceptions: Exception types to retry
+        on_retry: Callback function on retry (exception, retry_count)
     
     Usage:
         @retry_with_backoff(max_retries=3)
@@ -55,7 +55,7 @@ def retry_with_backoff(
                         logger.error(f"函数 {func.__name__} 在 {max_retries} 次重试后仍失败: {str(e)}")
                         raise
                     
-                    # 计算延迟
+                    # Calculate delay
                     current_delay = min(delay, max_delay)
                     if jitter:
                         current_delay = current_delay * (0.5 + random.random())
@@ -159,7 +159,7 @@ class RetryableAPIClient:
         Args:
             func: 要调用的函数
             *args: 函数参数
-            exceptions: 需要重试的异常类型
+            exceptions: Exception types to retry
             **kwargs: 函数关键字参数
             
         Returns:
@@ -205,7 +205,7 @@ class RetryableAPIClient:
         Args:
             items: 要处理的项目列表
             process_func: 处理函数，接收单个item作为参数
-            exceptions: 需要重试的异常类型
+            exceptions: Exception types to retry
             continue_on_failure: 单项失败后是否继续处理其他项
             
         Returns:

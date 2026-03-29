@@ -173,7 +173,7 @@ class SimulationParameters:
     generation_reasoning: str = ""  # LLM的推理说明
     
     def to_dict(self) -> Dict[str, Any]:
-        """转换为字典"""
+        """Convert to dictionary"""
         time_dict = asdict(self.time_config)
         return {
             "simulation_id": self.simulation_id,
@@ -255,15 +255,15 @@ class SimulationConfigGenerator:
         智能生成完整的模拟配置（分步生成）
         
         Args:
-            simulation_id: 模拟ID
-            project_id: 项目ID
-            graph_id: 图谱ID
+            simulation_id: Simulation ID
+            project_id: Project ID
+            graph_id: Graph ID
             simulation_requirement: 模拟需求描述
             document_text: 原始文档内容
-            entities: 过滤后的实体列表
+            entities: 过滤后的Entity list
             enable_twitter: 是否启用Twitter
             enable_reddit: 是否启用Reddit
-            progress_callback: 进度回调函数(current_step, total_steps, message)
+            progress_callback: Progress callback function(current_step, total_steps, message)
             
         Returns:
             SimulationParameters: 完整的模拟参数
@@ -831,7 +831,7 @@ class SimulationConfigGenerator:
 
 模拟需求: {simulation_requirement}
 
-## 实体列表
+## Entity list
 ```json
 {json.dumps(entity_list, ensure_ascii=False, indent=2)}
 ```

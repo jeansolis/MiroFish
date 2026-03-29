@@ -2,9 +2,9 @@
 模拟IPC通信模块
 用于Flask后端和模拟脚本之间的进程间通信
 
-通过文件系统实现简单的命令/响应模式：
-1. Flask写入命令到 commands/ 目录
-2. 模拟脚本轮询命令目录，执行命令并写入响应到 responses/ 目录
+Implements a simple command/response pattern via file system:
+1. Flask writes commands to commands/ directory
+2. Simulation script polls commands directory, executes commands and writes responses to responses/ directory
 3. Flask轮询响应目录获取结果
 """
 
@@ -110,7 +110,7 @@ class SimulationIPCClient:
         self.commands_dir = os.path.join(simulation_dir, "ipc_commands")
         self.responses_dir = os.path.join(simulation_dir, "ipc_responses")
         
-        # 确保目录存在
+        # Ensure directory exists
         os.makedirs(self.commands_dir, exist_ok=True)
         os.makedirs(self.responses_dir, exist_ok=True)
     
@@ -199,7 +199,7 @@ class SimulationIPCClient:
         Args:
             agent_id: Agent ID
             prompt: 采访问题
-            platform: 指定平台（可选）
+            platform: 指定平台(optional)
                 - "twitter": 只采访Twitter平台
                 - "reddit": 只采访Reddit平台  
                 - None: 双平台模拟时同时采访两个平台，单平台模拟时采访该平台
@@ -303,7 +303,7 @@ class SimulationIPCServer:
         self.commands_dir = os.path.join(simulation_dir, "ipc_commands")
         self.responses_dir = os.path.join(simulation_dir, "ipc_responses")
         
-        # 确保目录存在
+        # Ensure directory exists
         os.makedirs(self.commands_dir, exist_ok=True)
         os.makedirs(self.responses_dir, exist_ok=True)
         

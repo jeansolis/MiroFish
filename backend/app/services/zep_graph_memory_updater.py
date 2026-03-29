@@ -233,14 +233,14 @@ class ZepGraphMemoryUpdater:
         初始化更新器
         
         Args:
-            graph_id: Zep图谱ID
+            graph_id: Zep graph ID
             api_key: Zep API Key（可选，默认从配置读取）
         """
         self.graph_id = graph_id
         self.api_key = api_key or Config.ZEP_API_KEY
         
         if not self.api_key:
-            raise ValueError("ZEP_API_KEY未配置")
+            raise ValueError("ZEP_API_KEY is not configured")
         
         self.client = Zep(api_key=self.api_key)
         
@@ -486,8 +486,8 @@ class ZepGraphMemoryManager:
         为模拟创建图谱记忆更新器
         
         Args:
-            simulation_id: 模拟ID
-            graph_id: Zep图谱ID
+            simulation_id: Simulation ID
+            graph_id: Zep graph ID
             
         Returns:
             ZepGraphMemoryUpdater实例

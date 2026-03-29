@@ -424,7 +424,7 @@ class ZepToolsService:
     def __init__(self, api_key: Optional[str] = None, llm_client: Optional[LLMClient] = None):
         self.api_key = api_key or Config.ZEP_API_KEY
         if not self.api_key:
-            raise ValueError("ZEP_API_KEY 未配置")
+            raise ValueError("ZEP_API_KEY is not configured")
         
         self.client = Zep(api_key=self.api_key)
         # LLM客户端用于InsightForge生成子问题
@@ -451,13 +451,13 @@ class ZepToolsService:
                 last_exception = e
                 if attempt < max_retries - 1:
                     logger.warning(
-                        f"Zep {operation_name} 第 {attempt + 1} 次尝试失败: {str(e)[:100]}, "
-                        f"{delay:.1f}秒后重试..."
+                        f"Zep {operation_name} attempt {attempt + 1} failed: {str(e)[:100]}, "
+                        f"retrying in {delay:.1f}s..."
                     )
                     time.sleep(delay)
                     delay *= 2
                 else:
-                    logger.error(f"Zep {operation_name} 在 {max_retries} 次尝试后仍失败: {str(e)}")
+                    logger.error(f"Zep {operation_name} failed after {max_retries} attempts: {str(e)}")
         
         raise last_exception
     
@@ -475,7 +475,7 @@ class ZepToolsService:
         如果Zep Cloud的search API不可用，则降级为本地关键词匹配。
         
         Args:
-            graph_id: 图谱ID (Standalone Graph)
+            graph_id: Graph ID (Standalone Graph)
             query: 搜索查询
             limit: 返回结果数量
             scope: 搜索范围，"edges" 或 "nodes"
@@ -556,7 +556,7 @@ class ZepToolsService:
         获取所有边/节点，然后在本地进行关键词匹配
         
         Args:
-            graph_id: 图谱ID
+            graph_id: Graph ID
             query: 搜索查询
             limit: 返回结果数量
             scope: 搜索范围
@@ -614,7 +614,7 @@ class ZepToolsService:
                     })
             
             if scope in ["nodes", "both"]:
-                # 获取所有节点并匹配
+                # Get all nodes并匹配
                 all_nodes = self.get_all_nodes(graph_id)
                 scored_nodes = []
                 for node in all_nodes:
@@ -649,15 +649,15 @@ class ZepToolsService:
     
     def get_all_nodes(self, graph_id: str) -> List[NodeInfo]:
         """
-        获取图谱的所有节点（分页获取）
+        Get all nodes from the graph (paginated)
 
         Args:
-            graph_id: 图谱ID
+            graph_id: Graph ID
 
         Returns:
-            节点列表
+            Node list
         """
-        logger.info(f"获取图谱 {graph_id} 的所有节点...")
+        logger.info(f"Getting all nodes for graph {graph_id}...")
 
         nodes = fetch_all_nodes(self.client, graph_id)
 
@@ -680,13 +680,13 @@ class ZepToolsService:
         获取图谱的所有边（分页获取，包含时间信息）
 
         Args:
-            graph_id: 图谱ID
+            graph_id: Graph ID
             include_temporal: 是否包含时间信息（默认True）
 
         Returns:
-            边列表（包含created_at, valid_at, invalid_at, expired_at）
+            Edge list（包含created_at, valid_at, invalid_at, expired_at）
         """
-        logger.info(f"获取图谱 {graph_id} 的所有边...")
+        logger.info(f"Getting all edges for graph {graph_id}...")
 
         edges = fetch_all_edges(self.client, graph_id)
 
@@ -718,7 +718,7 @@ class ZepToolsService:
         获取单个节点的详细信息
         
         Args:
-            node_uuid: 节点UUID
+            node_uuid: Node UUID
             
         Returns:
             节点信息或None
@@ -752,11 +752,11 @@ class ZepToolsService:
         通过获取图谱所有边，然后过滤出与指定节点相关的边
         
         Args:
-            graph_id: 图谱ID
-            node_uuid: 节点UUID
+            graph_id: Graph ID
+            node_uuid: Node UUID
             
         Returns:
-            边列表
+            Edge list
         """
         logger.info(f"获取节点 {node_uuid[:8]}... 的相关边")
         
@@ -786,11 +786,11 @@ class ZepToolsService:
         按类型获取实体
         
         Args:
-            graph_id: 图谱ID
+            graph_id: Graph ID
             entity_type: 实体类型（如 Student, PublicFigure 等）
             
         Returns:
-            符合类型的实体列表
+            符合类型的Entity list
         """
         logger.info(f"获取类型为 {entity_type} 的实体...")
         
@@ -816,7 +816,7 @@ class ZepToolsService:
         搜索与该实体相关的所有信息，并生成摘要
         
         Args:
-            graph_id: 图谱ID
+            graph_id: Graph ID
             entity_name: 实体名称
             
         Returns:
@@ -857,7 +857,7 @@ class ZepToolsService:
         获取图谱的统计信息
         
         Args:
-            graph_id: 图谱ID
+            graph_id: Graph ID
             
         Returns:
             统计信息
@@ -867,7 +867,7 @@ class ZepToolsService:
         nodes = self.get_all_nodes(graph_id)
         edges = self.get_all_edges(graph_id)
         
-        # 统计实体类型分布
+        # Count entity types分布
         entity_types = {}
         for node in nodes:
             for label in node.labels:
@@ -899,7 +899,7 @@ class ZepToolsService:
         综合搜索与模拟需求相关的所有信息
         
         Args:
-            graph_id: 图谱ID
+            graph_id: Graph ID
             simulation_requirement: 模拟需求描述
             limit: 每类信息的数量限制
             
@@ -961,7 +961,7 @@ class ZepToolsService:
         5. 整合所有结果，生成深度洞察
         
         Args:
-            graph_id: 图谱ID
+            graph_id: Graph ID
             query: 用户问题
             simulation_requirement: 模拟需求描述
             report_context: 报告上下文（可选，用于更精准的子问题生成）
@@ -1160,7 +1160,7 @@ class ZepToolsService:
         这个工具适用于需要了解事件全貌、追踪演变过程的场景。
         
         Args:
-            graph_id: 图谱ID
+            graph_id: Graph ID
             query: 搜索查询（用于相关性排序）
             include_expired: 是否包含过期内容（默认True）
             limit: 返回结果数量限制
@@ -1172,7 +1172,7 @@ class ZepToolsService:
         
         result = PanoramaResult(query=query)
         
-        # 获取所有节点
+        # Get all nodes
         all_nodes = self.get_all_nodes(graph_id)
         node_map = {n.uuid: n for n in all_nodes}
         result.all_nodes = all_nodes
@@ -1249,7 +1249,7 @@ class ZepToolsService:
         3. 适用于简单、直接的检索需求
         
         Args:
-            graph_id: 图谱ID
+            graph_id: Graph ID
             query: 搜索查询
             limit: 返回结果数量
             
@@ -1281,7 +1281,7 @@ class ZepToolsService:
         【InterviewAgents - 深度采访】
         
         调用真实的OASIS采访API，采访模拟中正在运行的Agent：
-        1. 自动读取人设文件，了解所有模拟Agent
+        1. Automatically read persona files to understand all simulation Agents
         2. 使用LLM分析采访需求，智能选择最相关的Agent
         3. 使用LLM生成采访问题
         4. 调用 /api/simulation/interview/batch 接口进行真实采访（双平台同时采访）
@@ -1289,15 +1289,15 @@ class ZepToolsService:
         
         【重要】此功能需要模拟环境处于运行状态（OASIS环境未关闭）
         
-        【使用场景】
+        [Use Cases]
         - 需要从不同角色视角了解事件看法
         - 需要收集多方意见和观点
         - 需要获取模拟Agent的真实回答（非LLM模拟）
         
         Args:
-            simulation_id: 模拟ID（用于定位人设文件和调用采访API）
+            simulation_id: Simulation ID（用于定位人设文件和调用采访API）
             interview_requirement: 采访需求描述（非结构化，如"了解学生对事件的看法"）
-            simulation_requirement: 模拟需求背景（可选）
+            simulation_requirement: 模拟需求背景(optional)
             max_agents: 最多采访的Agent数量
             custom_questions: 自定义采访问题（可选，若不提供则自动生成）
             

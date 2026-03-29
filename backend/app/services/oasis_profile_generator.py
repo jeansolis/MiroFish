@@ -145,7 +145,7 @@ class OasisProfileGenerator:
     
     将Zep图谱中的实体转换为OASIS模拟所需的Agent Profile
     
-    优化特性：
+    优化Features:
     1. 调用Zep图谱检索功能获取更丰富的上下文
     2. 生成非常详细的人设（包括基本信息、职业经历、性格特征、社交媒体行为等）
     3. 区分个人实体和抽象群体实体
@@ -861,10 +861,10 @@ class OasisProfileGenerator:
         批量从实体生成Agent Profile（支持并行生成）
         
         Args:
-            entities: 实体列表
+            entities: Entity list
             use_llm: 是否使用LLM生成详细人设
-            progress_callback: 进度回调函数 (current, total, message)
-            graph_id: 图谱ID，用于Zep检索获取更丰富上下文
+            progress_callback: Progress callback function (current, total, message)
+            graph_id: Graph ID，用于Zep检索获取更丰富上下文
             parallel_count: 并行生成数量，默认5
             realtime_output_path: 实时写入的文件路径（如果提供，每生成一个就写入一次）
             output_platform: 输出平台格式 ("reddit" 或 "twitter")
@@ -1054,7 +1054,7 @@ class OasisProfileGenerator:
         
         Args:
             profiles: Profile列表
-            file_path: 文件路径
+            file_path: File path
             platform: 平台类型 ("reddit" 或 "twitter")
         """
         if platform == "twitter":

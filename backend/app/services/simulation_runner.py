@@ -132,12 +132,12 @@ class SimulationRunState:
     recent_actions: List[AgentAction] = field(default_factory=list)
     max_recent_actions: int = 50
     
-    # 时间戳
+    # Timestamps
     started_at: Optional[str] = None
     updated_at: str = field(default_factory=lambda: datetime.now().isoformat())
     completed_at: Optional[str] = None
     
-    # 错误信息
+    # Error message
     error: Optional[str] = None
     
     # 进程ID（用于停止）
@@ -321,11 +321,11 @@ class SimulationRunner:
         启动模拟
         
         Args:
-            simulation_id: 模拟ID
+            simulation_id: Simulation ID
             platform: 运行平台 (twitter/reddit/parallel)
             max_rounds: 最大模拟轮数（可选，用于截断过长的模拟）
             enable_graph_memory_update: 是否将Agent活动动态更新到Zep图谱
-            graph_id: Zep图谱ID（启用图谱更新时必需）
+            graph_id: Zep graph ID（启用图谱更新时必需）
             
         Returns:
             SimulationRunState
@@ -446,7 +446,7 @@ class SimulationRunner:
                 start_new_session=True,  # 创建新进程组，确保服务器关闭时能终止所有相关进程
             )
             
-            # 保存文件句柄以便后续关闭
+            # Save file句柄以便后续关闭
             cls._stdout_files[simulation_id] = main_log_file
             cls._stderr_files[simulation_id] = None  # 不再需要单独的 stderr
             
@@ -506,7 +506,7 @@ class SimulationRunner:
                         reddit_actions_log, reddit_position, state, "reddit"
                     )
                 
-                # 更新状态
+                # Update status
                 cls._save_run_state(state)
                 time.sleep(2)
             
@@ -719,7 +719,7 @@ class SimulationRunner:
         
         Args:
             process: 要终止的进程
-            simulation_id: 模拟ID（用于日志）
+            simulation_id: Simulation ID（用于日志）
             timeout: 等待进程退出的超时时间（秒）
         """
         if IS_WINDOWS:
@@ -773,7 +773,7 @@ class SimulationRunner:
         """停止模拟"""
         state = cls.get_run_state(simulation_id)
         if not state:
-            raise ValueError(f"模拟不存在: {simulation_id}")
+            raise ValueError(f"Simulation not found: {simulation_id}")
         
         if state.runner_status not in [RunnerStatus.RUNNING, RunnerStatus.PAUSED]:
             raise ValueError(f"模拟未在运行: {simulation_id}, status={state.runner_status}")
@@ -897,7 +897,7 @@ class SimulationRunner:
         获取所有平台的完整动作历史（无分页限制）
         
         Args:
-            simulation_id: 模拟ID
+            simulation_id: Simulation ID
             platform: 过滤平台（twitter/reddit）
             agent_id: 过滤Agent
             round_num: 过滤轮次
@@ -960,8 +960,8 @@ class SimulationRunner:
         获取动作历史（带分页）
         
         Args:
-            simulation_id: 模拟ID
-            limit: 返回数量限制
+            simulation_id: Simulation ID
+            limit: Return count limit
             offset: 偏移量
             platform: 过滤平台
             agent_id: 过滤Agent
@@ -991,7 +991,7 @@ class SimulationRunner:
         获取模拟时间线（按轮次汇总）
         
         Args:
-            simulation_id: 模拟ID
+            simulation_id: Simulation ID
             start_round: 起始轮次
             end_round: 结束轮次
             
@@ -1112,7 +1112,7 @@ class SimulationRunner:
         注意：不会删除配置文件（simulation_config.json）和 profile 文件
         
         Args:
-            simulation_id: 模拟ID
+            simulation_id: Simulation ID
             
         Returns:
             清理结果信息
@@ -1371,7 +1371,7 @@ class SimulationRunner:
         检查模拟环境是否存活（可以接收Interview命令）
 
         Args:
-            simulation_id: 模拟ID
+            simulation_id: Simulation ID
 
         Returns:
             True 表示环境存活，False 表示环境已关闭
@@ -1389,7 +1389,7 @@ class SimulationRunner:
         获取模拟环境的详细状态信息
 
         Args:
-            simulation_id: 模拟ID
+            simulation_id: Simulation ID
 
         Returns:
             状态详情字典，包含 status, twitter_available, reddit_available, timestamp
@@ -1432,10 +1432,10 @@ class SimulationRunner:
         采访单个Agent
 
         Args:
-            simulation_id: 模拟ID
+            simulation_id: Simulation ID
             agent_id: Agent ID
             prompt: 采访问题
-            platform: 指定平台（可选）
+            platform: 指定平台(optional)
                 - "twitter": 只采访Twitter平台
                 - "reddit": 只采访Reddit平台
                 - None: 双平台模拟时同时采访两个平台，返回整合结果
@@ -1450,7 +1450,7 @@ class SimulationRunner:
         """
         sim_dir = os.path.join(cls.RUN_STATE_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            raise ValueError(f"模拟不存在: {simulation_id}")
+            raise ValueError(f"Simulation not found: {simulation_id}")
 
         ipc_client = SimulationIPCClient(sim_dir)
 
@@ -1495,7 +1495,7 @@ class SimulationRunner:
         批量采访多个Agent
 
         Args:
-            simulation_id: 模拟ID
+            simulation_id: Simulation ID
             interviews: 采访列表，每个元素包含 {"agent_id": int, "prompt": str, "platform": str(可选)}
             platform: 默认平台（可选，会被每个采访项的platform覆盖）
                 - "twitter": 默认只采访Twitter平台
@@ -1512,7 +1512,7 @@ class SimulationRunner:
         """
         sim_dir = os.path.join(cls.RUN_STATE_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            raise ValueError(f"模拟不存在: {simulation_id}")
+            raise ValueError(f"Simulation not found: {simulation_id}")
 
         ipc_client = SimulationIPCClient(sim_dir)
 
@@ -1556,9 +1556,9 @@ class SimulationRunner:
         使用相同的问题采访模拟中的所有Agent
 
         Args:
-            simulation_id: 模拟ID
+            simulation_id: Simulation ID
             prompt: 采访问题（所有Agent使用相同问题）
-            platform: 指定平台（可选）
+            platform: 指定平台(optional)
                 - "twitter": 只采访Twitter平台
                 - "reddit": 只采访Reddit平台
                 - None: 双平台模拟时每个Agent同时采访两个平台
@@ -1569,7 +1569,7 @@ class SimulationRunner:
         """
         sim_dir = os.path.join(cls.RUN_STATE_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            raise ValueError(f"模拟不存在: {simulation_id}")
+            raise ValueError(f"Simulation not found: {simulation_id}")
 
         # 从配置文件获取所有Agent信息
         config_path = os.path.join(sim_dir, "simulation_config.json")
@@ -1614,7 +1614,7 @@ class SimulationRunner:
         向模拟发送关闭环境命令，使其优雅退出等待命令模式
         
         Args:
-            simulation_id: 模拟ID
+            simulation_id: Simulation ID
             timeout: 超时时间（秒）
             
         Returns:
@@ -1622,7 +1622,7 @@ class SimulationRunner:
         """
         sim_dir = os.path.join(cls.RUN_STATE_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            raise ValueError(f"模拟不存在: {simulation_id}")
+            raise ValueError(f"Simulation not found: {simulation_id}")
         
         ipc_client = SimulationIPCClient(sim_dir)
         
@@ -1720,7 +1720,7 @@ class SimulationRunner:
         获取Interview历史记录（从数据库读取）
         
         Args:
-            simulation_id: 模拟ID
+            simulation_id: Simulation ID
             platform: 平台类型（reddit/twitter/None）
                 - "reddit": 只获取Reddit平台的历史
                 - "twitter": 只获取Twitter平台的历史

@@ -368,7 +368,7 @@ Based on the above content, design entity types and relationship types suitable 
             '',
         ]
         
-        # 生成实体类型
+        # Generate entity types
         for entity in ontology.get("entity_types", []):
             name = entity["name"]
             desc = entity.get("description", f"A {name} entity.")
@@ -391,13 +391,13 @@ Based on the above content, design entity types and relationship types suitable 
             code_lines.append('')
             code_lines.append('')
         
-        code_lines.append('# ============== 关系类型定义 ==============')
+        code_lines.append('# ============== Relationship Type Definitions ==============')
         code_lines.append('')
         
-        # 生成关系类型
+        # Generate relationship types
         for edge in ontology.get("edge_types", []):
             name = edge["name"]
-            # 转换为PascalCase类名
+            # Convert to PascalCase class name
             class_name = ''.join(word.capitalize() for word in name.split('_'))
             desc = edge.get("description", f"A {name} relationship.")
             
@@ -419,8 +419,8 @@ Based on the above content, design entity types and relationship types suitable 
             code_lines.append('')
             code_lines.append('')
         
-        # 生成类型字典
-        code_lines.append('# ============== 类型配置 ==============')
+        # Generate type dictionaries
+        code_lines.append('# ============== Type Configuration ==============')
         code_lines.append('')
         code_lines.append('ENTITY_TYPES = {')
         for entity in ontology.get("entity_types", []):
@@ -436,7 +436,7 @@ Based on the above content, design entity types and relationship types suitable 
         code_lines.append('}')
         code_lines.append('')
         
-        # 生成边的source_targets映射
+        # Generate edge source_targets mapping
         code_lines.append('EDGE_SOURCE_TARGETS = {')
         for edge in ontology.get("edge_types", []):
             name = edge["name"]
