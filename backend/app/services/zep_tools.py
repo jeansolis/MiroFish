@@ -1369,31 +1369,31 @@ Return a JSON format sub-query list."""
             for agent_idx in selected_indices:
                 interviews_request.append({
                     "agent_id": agent_idx,
-                    "prompt": optimized_prompt  # 使用优化后的prompt
-                    # 不指定platform，API会在twitter和reddit两平台都采访
+                    "prompt": optimized_prompt  # Use optimized prompt
+                    # No platform specified, API will interview on both twitter and reddit
                 })
-            
-            logger.info(f"调用批量采访API（双平台）: {len(interviews_request)} Agent")
-            
-            # 调用 SimulationRunner 的批量采访method（不传platform，双平台采访）
+
+            logger.info(f"Calling batch interview API (dual-platform): {len(interviews_request)} Agents")
+
+            # Call SimulationRunner's batch interview method (no platform, dual-platform)
             api_result = SimulationRunner.interview_agents_batch(
                 simulation_id=simulation_id,
                 interviews=interviews_request,
-                platform=None,  # 不指定platform，双平台采访
-                timeout=180.0   # 双平台需要更长超时
+                platform=None,  # No platform specified, dual-platform interview
+                timeout=180.0   # Dual-platform needs longer timeout
             )
-            
-            logger.info(f"采访APIreturn: {api_result.get('interviews_count', 0)} result, success={api_result.get('success')}")
-            
-            # checkAPI调用是否Success
+
+            logger.info(f"Interview API returned: {api_result.get('interviews_count', 0)} results, success={api_result.get('success')}")
+
+            # Check if API call succeeded
             if not api_result.get("success", False):
-                error_msg = api_result.get("error", "Unknownerror")
-                logger.warning(f"采访APIreturnfailed: {error_msg}")
-                result.summary = f"采访API调用failed：{error_msg}。请checkOASIS模拟环境status。"
+                error_msg = api_result.get("error", "Unknown error")
+                logger.warning(f"Interview API returned failed: {error_msg}")
+                result.summary = f"Interview API call failed: {error_msg}. Please check OASIS simulation environment status."
                 return result
-            
-            # Step 5: 解析APIreturnresult，构建AgentInterviewobject
-            # 双平台模式return格式: {"twitter_0": {...}, "reddit_0": {...}, "twitter_1": {...}, ...}
+
+            # Step 5: Parse API return results, build AgentInterview objects
+            # Dual-platform mode return format: {"twitter_0": {...}, "reddit_0": {...}, "twitter_1": {...}, ...}
             api_data = api_result.get("result", {})
             results_dict = api_data.get("results", {}) if isinstance(api_data, dict) else {}
             
@@ -1403,45 +1403,45 @@ Return a JSON format sub-query list."""
                 agent_role = agent.get("profession", "Unknown")
                 agent_bio = agent.get("bio", "")
                 
-                # Retrieved该Agent在两平台的Interview result
+                # Retrieve this Agent's interview results from both platforms
                 twitter_result = results_dict.get(f"twitter_{agent_idx}", {})
                 reddit_result = results_dict.get(f"reddit_{agent_idx}", {})
                 
                 twitter_response = twitter_result.get("response", "")
                 reddit_response = reddit_result.get("response", "")
 
-                # 清理可能的工具调用 JSON 包裹
+                # Clean possible tool call JSON wrapping
                 twitter_response = self._clean_tool_call_response(twitter_response)
                 reddit_response = self._clean_tool_call_response(reddit_response)
 
-                # 始终output双平台标记
-                twitter_text = twitter_response if twitter_response else "（该平台未获得回复）"
-                reddit_text = reddit_response if reddit_response else "（该平台未获得回复）"
-                response_text = f"【Twitter平台回答】\n{twitter_text}\n\n【Reddit平台回答】\n{reddit_text}"
+                # Always output dual-platform markers
+                twitter_text = twitter_response if twitter_response else "(No response from this platform)"
+                reddit_text = reddit_response if reddit_response else "(No response from this platform)"
+                response_text = f"[Twitter Response]\n{twitter_text}\n\n[Reddit Response]\n{reddit_text}"
 
-                # 提取关键引言（从两平台的回答中）
+                # Extract key quotes (from both platform responses)
                 import re
                 combined_responses = f"{twitter_response} {reddit_response}"
 
-                # 清理response文本：去掉标记、编号、Markdown 等干扰
+                # Clean response text: remove markers, numbering, Markdown interference
                 clean_text = re.sub(r'#{1,6}\s+', '', combined_responses)
                 clean_text = re.sub(r'\{[^}]*tool_name[^}]*\}', '', clean_text)
                 clean_text = re.sub(r'[*_`|>~\-]{2,}', '', clean_text)
-                clean_text = re.sub(r'问题\d+[：:]\s*', '', clean_text)
+                clean_text = re.sub(r'Question\s*\d+[：:]\s*', '', clean_text)
                 clean_text = re.sub(r'【[^】]+】', '', clean_text)
 
-                # 策略1（主）: 提取完整的有实质content的句子
+                # Strategy 1 (primary): Extract complete substantive sentences
                 sentences = re.split(r'[。！？]', clean_text)
                 meaningful = [
                     s.strip() for s in sentences
                     if 20 <= len(s.strip()) <= 150
                     and not re.match(r'^[\s\W，,；;：:、]+', s.strip())
-                    and not s.strip().startswith(('{', '问题'))
+                    and not s.strip().startswith(('{', 'Question'))
                 ]
                 meaningful.sort(key=len, reverse=True)
                 key_quotes = [s + "。" for s in meaningful[:3]]
 
-                # 策略2（补充）: 正确配对的中文引号「」内长文本
+                # Strategy 2 (supplementary): Text within properly paired quotes
                 if not key_quotes:
                     paired = re.findall(r'\u201c([^\u201c\u201d]{15,100})\u201d', clean_text)
                     paired += re.findall(r'\u300c([^\u300c\u300d]{15,100})\u300d', clean_text)
@@ -1450,7 +1450,7 @@ Return a JSON format sub-query list."""
                 interview = AgentInterview(
                     agent_name=agent_name,
                     agent_role=agent_role,
-                    agent_bio=agent_bio[:1000],  # 扩大bio长度限制
+                    agent_bio=agent_bio[:1000],  # Expanded bio length limit
                     question=combined_prompt,
                     response=response_text,
                     key_quotes=key_quotes[:5]
@@ -1460,30 +1460,30 @@ Return a JSON format sub-query list."""
             result.interviewed_count = len(result.interviews)
             
         except ValueError as e:
-            # 模拟环境未运行
-            logger.warning(f"采访API调用failed（环境未运行？）: {e}")
-            result.summary = f"采访failed：{str(e)}。模拟环境可能已关闭，请ensureOASIS环境currently运行。"
+            # Simulation environment not running
+            logger.warning(f"Interview API call failed (environment not running?): {e}")
+            result.summary = f"Interview failed: {str(e)}. Simulation environment may be closed, please ensure OASIS environment is currently running."
             return result
         except Exception as e:
-            logger.error(f"采访API调用异常: {e}")
+            logger.error(f"Interview API call error: {e}")
             import traceback
             logger.error(traceback.format_exc())
-            result.summary = f"采访过程发生error：{str(e)}"
+            result.summary = f"Error during interview: {str(e)}"
             return result
-        
-        # Step 6: 生成采访summary
+
+        # Step 6: Generate interview summary
         if result.interviews:
             result.summary = self._generate_interview_summary(
                 interviews=result.interviews,
                 interview_requirement=interview_requirement
             )
         
-        logger.info(f"InterviewAgents完成: 采访了 {result.interviewed_count} Agent（双平台）")
+        logger.info(f"InterviewAgents complete: interviewed {result.interviewed_count} Agents (dual-platform)")
         return result
     
     @staticmethod
     def _clean_tool_call_response(response: str) -> str:
-        """清理 Agent 回复中的 JSON 工具调用包裹，提取实际content"""
+        """Clean JSON tool call wrapping from Agent response, extract actual content"""
         if not response or not response.strip().startswith('{'):
             return response
         text = response.strip()
@@ -1503,37 +1503,37 @@ Return a JSON format sub-query list."""
         return response
 
     def _load_agent_profiles(self, simulation_id: str) -> List[Dict[str, Any]]:
-        """加载模拟的Agent人设file"""
+        """Load simulation Agent persona files"""
         import os
         import csv
-        
-        # 构建人设filepath
+
+        # Build persona file path
         sim_dir = os.path.join(
-            os.path.dirname(__file__), 
+            os.path.dirname(__file__),
             f'../../uploads/simulations/{simulation_id}'
         )
-        
+
         profiles = []
-        
-        # 优先尝试读取Reddit JSON格式
+
+        # Prefer reading Reddit JSON format
         reddit_profile_path = os.path.join(sim_dir, "reddit_profiles.json")
         if os.path.exists(reddit_profile_path):
             try:
                 with open(reddit_profile_path, 'r', encoding='utf-8') as f:
                     profiles = json.load(f)
-                logger.info(f"从 reddit_profiles.json 加载了 {len(profiles)} 人设")
+                logger.info(f"Loaded {len(profiles)} personas from reddit_profiles.json")
                 return profiles
             except Exception as e:
-                logger.warning(f"读取 reddit_profiles.json failed: {e}")
-        
-        # 尝试读取Twitter CSV格式
+                logger.warning(f"Failed to read reddit_profiles.json: {e}")
+
+        # Try reading Twitter CSV format
         twitter_profile_path = os.path.join(sim_dir, "twitter_profiles.csv")
         if os.path.exists(twitter_profile_path):
             try:
                 with open(twitter_profile_path, 'r', encoding='utf-8') as f:
                     reader = csv.DictReader(f)
                     for row in reader:
-                        # CSV格式转换为统一格式
+                        # Convert CSV format to unified format
                         profiles.append({
                             "realname": row.get("name", ""),
                             "username": row.get("username", ""),
@@ -1541,13 +1541,13 @@ Return a JSON format sub-query list."""
                             "persona": row.get("user_char", ""),
                             "profession": "Unknown"
                         })
-                logger.info(f"从 twitter_profiles.csv 加载了 {len(profiles)} 人设")
+                logger.info(f"Loaded {len(profiles)} personas from twitter_profiles.csv")
                 return profiles
             except Exception as e:
-                logger.warning(f"读取 twitter_profiles.csv failed: {e}")
-        
+                logger.warning(f"Failed to read twitter_profiles.csv: {e}")
+
         return profiles
-    
+
     def _select_agents_for_interview(
         self,
         profiles: List[Dict[str, Any]],
@@ -1556,16 +1556,16 @@ Return a JSON format sub-query list."""
         max_agents: int
     ) -> tuple:
         """
-        使用LLM选择要采访的Agent
-        
+        Use LLM to select Agents for interview.
+
         Returns:
             tuple: (selected_agents, selected_indices, reasoning)
-                - selected_agents: 选中Agent的完整infolist
-                - selected_indices: 选中Agent的索引list（用于API调用）
-                - reasoning: 选择理由
+                - selected_agents: Full info list of selected Agents
+                - selected_indices: Index list of selected Agents (for API calls)
+                - reasoning: Selection reasoning
         """
-        
-        # 构建Agentsummarylist
+
+        # Build Agent summary list
         agent_summaries = []
         for i, profile in enumerate(profiles):
             summary = {
@@ -1576,31 +1576,31 @@ Return a JSON format sub-query list."""
                 "interested_topics": profile.get("interested_topics", [])
             }
             agent_summaries.append(summary)
-        
-        system_prompt = """你 is a 专业的采访策划专家。你的任务是根据采访需求，从模拟Agentlist中选择最适合采访的object。
 
-选择标准：
-1. Agent的身份/职业与采访主题相关
-2. Agent可能持有独特或有价值的观点
-3. 选择多样化的视角（如：支持方、反对方、中立方、专业人士等）
-4. 优先选择与事件直接相关的角色
+        system_prompt = """You are a professional interview planning expert. Your task is to select the most suitable Agents for interview based on the interview requirement from the simulation Agent list.
 
-returnJSON格式：
+Selection criteria:
+1. Agent's identity/profession is related to the interview topic
+2. Agent may hold unique or valuable viewpoints
+3. Select diverse perspectives (e.g., supporters, opponents, neutral parties, professionals, etc.)
+4. Prioritize roles directly related to the event
+
+Return JSON format:
 {
-    "selected_indices": [选中Agent的索引list],
-    "reasoning": "选择理由说明"
+    "selected_indices": [list of selected Agent indices],
+    "reasoning": "explanation of selection reasoning"
 }"""
 
-        user_prompt = f"""采访需求：
+        user_prompt = f"""Interview requirement:
 {interview_requirement}
 
-模拟背景：
-{simulation_requirement if simulation_requirement else "未提供"}
+Simulation background:
+{simulation_requirement if simulation_requirement else "Not provided"}
 
-Options择的Agentlist（共{len(agent_summaries)}）：
+Agent list to choose from (total {len(agent_summaries)}):
 {json.dumps(agent_summaries, ensure_ascii=False, indent=2)}
 
-请选择最多{max_agents}最适合采访的Agent，并说明选择理由。"""
+Please select up to {max_agents} most suitable Agents for interview and explain the reasoning."""
 
         try:
             response = self.llm.chat_json(
@@ -1610,56 +1610,56 @@ Options择的Agentlist（共{len(agent_summaries)}）：
                 ],
                 temperature=0.3
             )
-            
+
             selected_indices = response.get("selected_indices", [])[:max_agents]
-            reasoning = response.get("reasoning", "基于相关性自动选择")
-            
-            # Retrieved选中的Agent完整info
+            reasoning = response.get("reasoning", "Auto-selected based on relevance")
+
+            # Retrieve full info of selected Agents
             selected_agents = []
             valid_indices = []
             for idx in selected_indices:
                 if 0 <= idx < len(profiles):
                     selected_agents.append(profiles[idx])
                     valid_indices.append(idx)
-            
+
             return selected_agents, valid_indices, reasoning
-            
+
         except Exception as e:
-            logger.warning(f"LLM选择Agentfailed，使用Default选择: {e}")
-            # 降级：选择前N
+            logger.warning(f"LLM Agent selection failed, using default selection: {e}")
+            # Fallback: select first N
             selected = profiles[:max_agents]
             indices = list(range(min(max_agents, len(profiles))))
-            return selected, indices, "使用Default选择策略"
-    
+            return selected, indices, "Using default selection strategy"
+
     def _generate_interview_questions(
         self,
         interview_requirement: str,
         simulation_requirement: str,
         selected_agents: List[Dict[str, Any]]
     ) -> List[str]:
-        """使用LLM生成Interview question"""
-        
+        """Use LLM to generate interview questions"""
+
         agent_roles = [a.get("profession", "Unknown") for a in selected_agents]
-        
-        system_prompt = """你 is a 专业的记者/采访者。根据采访需求，生成3-5深度Interview question。
 
-问题要求：
-1. 开放性问题，鼓励详细回答
-2. 针对不同角色可能有不同答案
-3. 涵盖事实、观点、感受等多维度
-4. 语言自然，像真实采访一样
-5. 每问题控制在50字以内，简洁明了
-6. 直接提问，不要包含背景说明或前缀
+        system_prompt = """You are a professional journalist/interviewer. Generate 3-5 in-depth interview questions based on the interview requirement.
 
-returnJSON格式：{"questions": ["问题1", "问题2", ...]}"""
+Question requirements:
+1. Open-ended questions that encourage detailed answers
+2. Different roles may give different answers
+3. Cover multiple dimensions: facts, opinions, feelings, etc.
+4. Natural language, like a real interview
+5. Keep each question under 50 words, concise and clear
+6. Ask directly, don't include background explanations or prefixes
 
-        user_prompt = f"""采访需求：{interview_requirement}
+Return JSON format: {"questions": ["question 1", "question 2", ...]}"""
 
-模拟背景：{simulation_requirement if simulation_requirement else "未提供"}
+        user_prompt = f"""Interview requirement: {interview_requirement}
 
-采访object角色：{', '.join(agent_roles)}
+Simulation background: {simulation_requirement if simulation_requirement else "Not provided"}
 
-请生成3-5Interview question。"""
+Interviewee roles: {', '.join(agent_roles)}
+
+Please generate 3-5 interview questions."""
 
         try:
             response = self.llm.chat_json(
@@ -1669,54 +1669,54 @@ returnJSON格式：{"questions": ["问题1", "问题2", ...]}"""
                 ],
                 temperature=0.5
             )
-            
-            return response.get("questions", [f"About{interview_requirement}，您有什么看法？"])
-            
+
+            return response.get("questions", [f"What are your views on {interview_requirement}?"])
+
         except Exception as e:
-            logger.warning(f"生成Interview questionfailed: {e}")
+            logger.warning(f"Generate interview questions failed: {e}")
             return [
-                f"About{interview_requirement}，您的观点是什么？",
-                "这件事对您或您所代表的群体有什么影响？",
-                "您认为应该如何解决或改进这问题？"
+                f"What is your perspective on {interview_requirement}?",
+                "What impact does this have on you or the group you represent?",
+                "How do you think this issue should be resolved or improved?"
             ]
-    
+
     def _generate_interview_summary(
         self,
         interviews: List[AgentInterview],
         interview_requirement: str
     ) -> str:
-        """生成采访summary"""
-        
+        """Generate interview summary"""
+
         if not interviews:
-            return "未完成任何采访"
-        
-        # 收集所有采访content
+            return "No interviews completed"
+
+        # Collect all interview content
         interview_texts = []
         for interview in interviews:
-            interview_texts.append(f"【{interview.agent_name}（{interview.agent_role}）】\n{interview.response[:500]}")
-        
-        system_prompt = """你 is a 专业的新闻编辑。请根据多位受访者的回答，生成一份采访summary。
+            interview_texts.append(f"[{interview.agent_name} ({interview.agent_role})]\n{interview.response[:500]}")
 
-summary要求：
-1. 提炼各方主要观点
-2. 指出观点的共识和分歧
-3. 突出有价值的引言
-4. 客观中立，不偏袒任何一方
-5. 控制在1000字内
+        system_prompt = """You are a professional news editor. Based on multiple interviewees' responses, generate an interview summary.
 
-格式约束（必须遵守）：
-- 使用纯文本段落，用空行分隔不同部分
-- 不要使用Markdowntitle（如#、##、###）
-- 不要使用分割线（如---、***）
-- 引用受访者原话时使用中文引号「」
-- 可以使用**加粗**标记关键词，但不要使用其他Markdown语法"""
+Summary requirements:
+1. Distill main viewpoints from all parties
+2. Identify consensus and disagreements
+3. Highlight valuable quotes
+4. Remain objective and neutral, not favoring any side
+5. Keep within 1000 words
 
-        user_prompt = f"""采访主题：{interview_requirement}
+Format constraints (must follow):
+- Use plain text paragraphs, separate different sections with blank lines
+- Do not use Markdown headings (like #, ##, ###)
+- Do not use separators (like ---, ***)
+- Use quotation marks when quoting interviewees
+- You may use **bold** for keywords, but no other Markdown syntax"""
 
-采访content：
+        user_prompt = f"""Interview topic: {interview_requirement}
+
+Interview content:
 {"".join(interview_texts)}
 
-请生成采访summary。"""
+Please generate an interview summary."""
 
         try:
             summary = self.llm.chat(
@@ -1728,8 +1728,8 @@ summary要求：
                 max_tokens=800
             )
             return summary
-            
+
         except Exception as e:
-            logger.warning(f"生成采访summaryfailed: {e}")
-            # 降级：简单拼接
-            return f"共采访了{len(interviews)}位受访者，Including：" + "、".join([i.agent_name for i in interviews])
+            logger.warning(f"Generate interview summary failed: {e}")
+            # Fallback: simple concatenation
+            return f"Interviewed {len(interviews)} respondents, including: " + ", ".join([i.agent_name for i in interviews])
