@@ -179,7 +179,7 @@ class SimulationLogManager:
         return self.reddit_logger
     
     def log(self, message: str, level: str = "info"):
-        """记录主日志"""
+        """Log main message"""
         if self._main_logger:
             getattr(self._main_logger, level.lower(), self._main_logger.info)(message)
     
@@ -196,12 +196,12 @@ class SimulationLogManager:
         self.log(message, "debug")
 
 
-# ============ 兼容旧接口 ============
+# ============ Legacy interface compatibility ============
 
 class ActionLogger:
     """
-    Action Logger（兼容旧接口）
-    建议使用 SimulationLogManager 代替
+    Action Logger (legacy interface compatibility)
+    Recommend using SimulationLogManager instead
     """
     
     def __init__(self, log_path: str):
@@ -288,12 +288,12 @@ class ActionLogger:
             f.write(json.dumps(entry, ensure_ascii=False) + '\n')
 
 
-# 全局日志实例（兼容旧接口）
+# Global logger instance (legacy interface compatibility)
 _global_logger: Optional[ActionLogger] = None
 
 
 def get_logger(log_path: Optional[str] = None) -> ActionLogger:
-    """获取全局日志实例（兼容旧接口）"""
+    """Get global logger instance (legacy interface compatibility)"""
     global _global_logger
     
     if log_path:
