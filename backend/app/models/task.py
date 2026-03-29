@@ -54,7 +54,7 @@ class Task:
 class TaskManager:
     """
     Task Manager
-    线程安全的Task Status Management
+    Thread-safe Task Status Management
     """
     
     _instance = None

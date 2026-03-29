@@ -109,7 +109,7 @@ def fetch_all_edges(
     max_retries: int = _DEFAULT_MAX_RETRIES,
     retry_delay: float = _DEFAULT_RETRY_DELAY,
 ) -> list[Any]:
-    """分页获取图谱所有边，返回完整列表。每页请求自带重试。"""
+    """Paginated fetch of all graph edges, returns complete list. Each page request has built-in retry."""
     all_edges: list[Any] = []
     cursor: str | None = None
     page_num = 0

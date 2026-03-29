@@ -1,6 +1,6 @@
 """
 Zep Entity Reading and Filtering Service
-从Zep图谱中读取节点，Filter nodes matching predefined entity types
+Read nodes from Zep graph, filter nodes matching predefined entity types
 """
 
 import time
@@ -118,7 +118,7 @@ class ZepEntityReader:
                         f"retrying in {delay:.1f}s..."
                     )
                     time.sleep(delay)
-                    delay *= 2  # 指数退避
+                    delay *= 2  # Exponential backoff
                 else:
                     logger.error(f"Zep {operation_name} failed after {max_retries} attempts: {str(e)}")
         
@@ -252,7 +252,7 @@ class ZepEntityReader:
         for node in all_nodes:
             labels = node.get("labels", [])
             
-            # Filtering logic:Labels必须包含除"Entity"和"Node"之外的标签
+            # Filtering logic: Labels must contain tags beyond "Entity" and "Node"
             custom_labels = [l for l in labels if l not in ["Entity", "Node"]]
             
             if not custom_labels:
@@ -358,7 +358,7 @@ class ZepEntityReader:
             # Get node edges
             edges = self.get_node_edges(entity_uuid)
             
-            # Get all nodes用于关联查找
+            # Get all nodes for relationship lookup
             all_nodes = self.get_all_nodes(graph_id)
             node_map = {n["uuid"]: n for n in all_nodes}
             

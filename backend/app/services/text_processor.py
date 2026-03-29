@@ -1,5 +1,5 @@
 """
-文本处理服务
+Text processing service
 """
 
 from typing import List, Optional

@@ -58,7 +58,7 @@ def generate_report():
         
         force_regenerate = data.get('force_regenerate', False)
         
-        # 获取模拟信息
+        # Get simulation info
         manager = SimulationManager()
         state = manager.get_simulation(simulation_id)
         
@@ -83,7 +83,7 @@ def generate_report():
                     }
                 })
         
-        # Get project信息
+        # Get project info
         project = ProjectManager.get_project(state.project_id)
         if not project:
             return jsonify({
@@ -260,7 +260,7 @@ def get_generate_status():
         })
         
     except Exception as e:
-        logger.error(f"Query task status失败: {str(e)}")
+        logger.error(f"Query task status failed: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e)

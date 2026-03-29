@@ -176,13 +176,13 @@ def generate_ontology():
         project.simulation_requirement = simulation_requirement
         logger.info(f"Project created: {project.project_id}")
         
-        # Save file并提取文本
+        # Save files and extract text
         document_texts = []
         all_text = ""
         
         for file in uploaded_files:
             if file and file.filename and allowed_file(file.filename):
-                # Save file到项目目录
+                # Save file to project directory
                 file_info = ProjectManager.save_file_to_project(
                     project.project_id, 
                     file, 
@@ -263,10 +263,10 @@ def build_graph():
     
     Request (JSON):
         {
-            "project_id": "proj_xxxx",  // 必填，来自接口1
-            "graph_name": "Graph name",    // 可选
-            "chunk_size": 500,          // 可选，默认500
-            "chunk_overlap": 50         // 可选，默认50
+            "project_id": "proj_xxxx",  // Required, from Interface 1
+            "graph_name": "Graph name",    // Optional
+            "chunk_size": 500,          // Optional, default 500
+            "chunk_overlap": 50         // Optional, default 50
         }
         
     Returns:
@@ -349,7 +349,7 @@ def build_graph():
         if not text:
             return jsonify({
                 "success": False,
-                "error": "未找到Extracted text content"
+                "error": "Extracted text content not found"
             }), 400
         
         # Get ontology
@@ -488,7 +488,7 @@ def build_graph():
                 )
                 
             except Exception as e:
-                # Update project status为失败
+                # Update project status to failed
                 build_logger.error(f"[{task_id}] Graph build failed: {str(e)}")
                 build_logger.debug(traceback.format_exc())
                 
