@@ -380,7 +380,7 @@ class SimulationManager:
                     total=len(profiles)
                 )
             
-            # ========== 阶段3: LLM智能生成模拟配置 ==========
+            # ========== 阶段3: LLMSmart generationSimulation configuration ==========
             if progress_callback:
                 progress_callback(
                     "generating_config", 0, 

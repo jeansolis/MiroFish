@@ -1,6 +1,6 @@
 """
 OASISSimulation Runner
-在后台运行模拟并记录每个Agent的动作，支持实时状态监控
+在后台运行模拟并记录每Agent的动作，支持实时状态监控
 """
 
 import os
@@ -438,7 +438,7 @@ class SimulationRunner:
                 cmd,
                 cwd=sim_dir,
                 stdout=main_log_file,
-                stderr=subprocess.STDOUT,  # stderr 也写入同一个文件
+                stderr=subprocess.STDOUT,  # stderr 也写入同一文件
                 text=True,
                 encoding='utf-8',  # 显式指定编码
                 bufsize=1,
@@ -709,7 +709,7 @@ class SimulationRunner:
         if reddit_enabled and not state.reddit_completed:
             return False
         
-        # 至少有一个平台被启用且已完成
+        # 至少有一平台被启用且已完成
         return twitter_enabled or reddit_enabled
     
     @classmethod
@@ -724,7 +724,7 @@ class SimulationRunner:
         """
         if IS_WINDOWS:
             # Windows: 使用 taskkill 命令终止进程树
-            # /F = 强制终止, /T = 终止进程树（包括子进程）
+            # /F = 强制终止, /T = 终止进程树（Including子进程）
             logger.info(f"终止进程树 (Windows): simulation={simulation_id}, pid={process.pid}")
             try:
                 # 先尝试优雅终止
@@ -757,7 +757,7 @@ class SimulationRunner:
             pgid = os.getpgid(process.pid)
             logger.info(f"终止进程组 (Unix): simulation={simulation_id}, pgid={pgid}")
             
-            # 先发送 SIGTERM 给整个进程组
+            # 先发送 SIGTERM 给整进程组
             os.killpg(pgid, signal.SIGTERM)
             
             try:
@@ -826,7 +826,7 @@ class SimulationRunner:
         round_num: Optional[int] = None
     ) -> List[AgentAction]:
         """
-        从单个动作文件中读取动作
+        从单动作文件中读取动作
         
         Args:
             file_path: 动作日志文件路径
@@ -857,7 +857,7 @@ class SimulationRunner:
                     if "agent_id" not in data:
                         continue
                     
-                    # 获取平台：优先使用记录中的 platform，否则使用默认平台
+                    # Retrieved平台：优先使用记录中的 platform，否则使用默认平台
                     record_platform = data.get("platform") or default_platform or ""
                     
                     # 过滤
@@ -894,7 +894,7 @@ class SimulationRunner:
         round_num: Optional[int] = None
     ) -> List[AgentAction]:
         """
-        获取所有平台的完整动作历史（无分页限制）
+        Retrieved所有平台的完整动作历史（无分页限制）
         
         Args:
             simulation_id: Simulation ID
@@ -957,7 +957,7 @@ class SimulationRunner:
         round_num: Optional[int] = None
     ) -> List[AgentAction]:
         """
-        获取动作历史（带分页）
+        Retrieved动作历史（带分页）
         
         Args:
             simulation_id: Simulation ID
@@ -988,7 +988,7 @@ class SimulationRunner:
         end_round: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """
-        获取模拟时间线（按轮次汇总）
+        Retrieved模拟时间线（按轮次汇总）
         
         Args:
             simulation_id: Simulation ID
@@ -1054,7 +1054,7 @@ class SimulationRunner:
     @classmethod
     def get_agent_stats(cls, simulation_id: str) -> List[Dict[str, Any]]:
         """
-        获取每个Agent的统计信息
+        Retrieved每Agent的统计信息
         
         Returns:
             Agent统计列表
@@ -1097,7 +1097,7 @@ class SimulationRunner:
     @classmethod
     def cleanup_simulation_logs(cls, simulation_id: str) -> Dict[str, Any]:
         """
-        清理模拟的运行日志（用于强制重新开始模拟）
+        清理模拟的运行日志（用于强制重新Start模拟）
         
         会删除以下文件：
         - run_state.json
@@ -1127,7 +1127,7 @@ class SimulationRunner:
         cleaned_files = []
         errors = []
         
-        # 要删除的文件列表（包括数据库文件）
+        # 要删除的文件列表（Including数据库文件）
         files_to_delete = [
             "run_state.json",
             "simulation.log",
@@ -1293,13 +1293,13 @@ class SimulationRunner:
         
         # Flask debug 模式下，只在 reloader 子进程中注册清理（实际运行应用的进程）
         # WERKZEUG_RUN_MAIN=true 表示是 reloader 子进程
-        # 如果不是 debug 模式，则没有这个环境变量，也需要注册
+        # 如果不是 debug 模式，则没有这环境变量，也需要注册
         is_reloader_process = os.environ.get('WERKZEUG_RUN_MAIN') == 'true'
         is_debug_mode = os.environ.get('FLASK_DEBUG') == '1' or os.environ.get('WERKZEUG_RUN_MAIN') is not None
         
         # 在 debug 模式下，只在 reloader 子进程中注册；非 debug 模式下始终注册
         if is_debug_mode and not is_reloader_process:
-            _cleanup_registered = True  # 标记已注册，防止子进程再次尝试
+            _cleanup_registered = True  # 标记已注册，防止子进程再 attempts
             return
         
         # 保存原有的信号处理器
@@ -1355,7 +1355,7 @@ class SimulationRunner:
     @classmethod
     def get_running_simulations(cls) -> List[str]:
         """
-        获取所有正在运行的模拟ID列表
+        Retrieved所有正在运行的模拟ID列表
         """
         running = []
         for sim_id, process in cls._processes.items():
@@ -1386,7 +1386,7 @@ class SimulationRunner:
     @classmethod
     def get_env_status_detail(cls, simulation_id: str) -> Dict[str, Any]:
         """
-        获取模拟环境的详细状态信息
+        Retrieved模拟环境的详细状态信息
 
         Args:
             simulation_id: Simulation ID
@@ -1429,7 +1429,7 @@ class SimulationRunner:
         timeout: float = 60.0
     ) -> Dict[str, Any]:
         """
-        采访单个Agent
+        采访单Agent
 
         Args:
             simulation_id: Simulation ID
@@ -1438,7 +1438,7 @@ class SimulationRunner:
             platform: 指定平台(optional)
                 - "twitter": 只采访Twitter平台
                 - "reddit": 只采访Reddit平台
-                - None: 双平台模拟时同时采访两个平台，返回整合结果
+                - None: 双平台模拟时同时采访两平台，返回整合结果
             timeout: 超时时间（秒）
 
         Returns:
@@ -1492,15 +1492,15 @@ class SimulationRunner:
         timeout: float = 120.0
     ) -> Dict[str, Any]:
         """
-        批量采访多个Agent
+        批量采访多Agent
 
         Args:
             simulation_id: Simulation ID
-            interviews: 采访列表，每个元素包含 {"agent_id": int, "prompt": str, "platform": str(可选)}
-            platform: 默认平台（可选，会被每个采访项的platform覆盖）
+            interviews: 采访列表，每元素包含 {"agent_id": int, "prompt": str, "platform": str(可选)}
+            platform: 默认平台（可选，会被每采访项的platform覆盖）
                 - "twitter": 默认只采访Twitter平台
                 - "reddit": 默认只采访Reddit平台
-                - None: 双平台模拟时每个Agent同时采访两个平台
+                - None: 双平台模拟时每Agent同时采访两平台
             timeout: 超时时间（秒）
 
         Returns:
@@ -1561,7 +1561,7 @@ class SimulationRunner:
             platform: 指定平台(optional)
                 - "twitter": 只采访Twitter平台
                 - "reddit": 只采访Reddit平台
-                - None: 双平台模拟时每个Agent同时采访两个平台
+                - None: 双平台模拟时每Agent同时采访两平台
             timeout: 超时时间（秒）
 
         Returns:
@@ -1571,17 +1571,17 @@ class SimulationRunner:
         if not os.path.exists(sim_dir):
             raise ValueError(f"Simulation not found: {simulation_id}")
 
-        # 从配置文件获取所有Agent信息
+        # 从配置文件Retrieved所有Agent信息
         config_path = os.path.join(sim_dir, "simulation_config.json")
         if not os.path.exists(config_path):
-            raise ValueError(f"模拟配置不存在: {simulation_id}")
+            raise ValueError(f"Simulation configuration不存在: {simulation_id}")
 
         with open(config_path, 'r', encoding='utf-8') as f:
             config = json.load(f)
 
         agent_configs = config.get("agent_configs", [])
         if not agent_configs:
-            raise ValueError(f"模拟配置中没有Agent: {simulation_id}")
+            raise ValueError(f"Simulation configuration中没有Agent: {simulation_id}")
 
         # 构建批量采访列表
         interviews = []
@@ -1658,7 +1658,7 @@ class SimulationRunner:
         agent_id: Optional[int] = None,
         limit: int = 100
     ) -> List[Dict[str, Any]]:
-        """从单个数据库获取Interview历史"""
+        """从单数据库RetrievedInterview历史"""
         import sqlite3
         
         if not os.path.exists(db_path):
@@ -1717,16 +1717,16 @@ class SimulationRunner:
         limit: int = 100
     ) -> List[Dict[str, Any]]:
         """
-        获取Interview历史记录（从数据库读取）
+        RetrievedInterview历史记录（从数据库读取）
         
         Args:
             simulation_id: Simulation ID
             platform: 平台类型（reddit/twitter/None）
-                - "reddit": 只获取Reddit平台的历史
-                - "twitter": 只获取Twitter平台的历史
-                - None: 获取两个平台的所有历史
-            agent_id: 指定Agent ID（可选，只获取该Agent的历史）
-            limit: 每个平台返回数量限制
+                - "reddit": 只RetrievedReddit平台的历史
+                - "twitter": 只RetrievedTwitter平台的历史
+                - None: Retrieved两平台的所有历史
+            agent_id: 指定Agent ID（可选，只Retrieved该Agent的历史）
+            limit: 每平台返回数量限制
             
         Returns:
             Interview历史记录列表
@@ -1739,7 +1739,7 @@ class SimulationRunner:
         if platform in ("reddit", "twitter"):
             platforms = [platform]
         else:
-            # 不指定platform时，查询两个平台
+            # 不指定platform时，查询两平台
             platforms = ["twitter", "reddit"]
         
         for p in platforms:
@@ -1755,7 +1755,7 @@ class SimulationRunner:
         # 按时间降序排序
         results.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
         
-        # 如果查询了多个平台，限制总数
+        # 如果查询了多平台，限制总数
         if len(platforms) > 1 and len(results) > limit:
             results = results[:limit]
         

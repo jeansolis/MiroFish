@@ -131,7 +131,7 @@ class AgentActivity:
         
         if target_user_name:
             return f"关注了用户「{target_user_name}」"
-        return "关注了一个用户"
+        return "关注了一用户"
     
     def _describe_create_comment(self) -> str:
         """发表评论 - 包含评论内容和所评论的帖子信息"""
@@ -191,7 +191,7 @@ class AgentActivity:
         
         if target_user_name:
             return f"屏蔽了用户「{target_user_name}」"
-        return "屏蔽了一个用户"
+        return "屏蔽了一用户"
     
     def _describe_generic(self) -> str:
         # 对于未知的动作类型，生成通用描述
@@ -212,7 +212,7 @@ class ZepGraphMemoryUpdater:
     - 点赞/踩的评论原文
     """
     
-    # 批量发送大小（每个平台累积多少条后发送）
+    # 批量发送大小（每平台累积多少条后发送）
     BATCH_SIZE = 5
     
     # 平台名称映射（用于控制台显示）
@@ -247,7 +247,7 @@ class ZepGraphMemoryUpdater:
         # 活动队列
         self._activity_queue: Queue = Queue()
         
-        # 按平台分组的活动缓冲区（每个平台各自累积到BATCH_SIZE后批量发送）
+        # 按平台分组的活动缓冲区（每平台各自累积到BATCH_SIZE后批量发送）
         self._platform_buffers: Dict[str, List[AgentActivity]] = {
             'twitter': [],
             'reddit': [],
@@ -260,15 +260,15 @@ class ZepGraphMemoryUpdater:
         
         # Statistics
         self._total_activities = 0  # 实际添加到队列的活动数
-        self._total_sent = 0        # 成功发送到Zep的批次数
-        self._total_items_sent = 0  # 成功发送到Zep的活动条数
+        self._total_sent = 0        # Success发送到Zep的批次数
+        self._total_items_sent = 0  # Success发送到Zep的活动条数
         self._failed_count = 0      # 发送失败的批次数
         self._skipped_count = 0     # 被过滤跳过的活动数（DO_NOTHING）
         
         logger.info(f"ZepGraphMemoryUpdater 初始化完成: graph_id={graph_id}, batch_size={self.BATCH_SIZE}")
     
     def _get_platform_display_name(self, platform: str) -> str:
-        """获取平台的显示名称"""
+        """Retrieved平台的显示名称"""
         return self.PLATFORM_DISPLAY_NAMES.get(platform.lower(), platform)
     
     def start(self):
@@ -304,9 +304,9 @@ class ZepGraphMemoryUpdater:
     
     def add_activity(self, activity: AgentActivity):
         """
-        添加一个agent活动到队列
+        添加一agent活动到队列
         
-        所有有意义的行为都会被添加到队列，包括：
+        所有有意义的行为都会被添加到队列，Including：
         - CREATE_POST（发帖）
         - CREATE_COMMENT（评论）
         - QUOTE_POST（引用帖子）
@@ -360,7 +360,7 @@ class ZepGraphMemoryUpdater:
         """后台工作循环 - 按平台批量发送活动到Zep"""
         while self._running or not self._activity_queue.empty():
             try:
-                # 尝试从队列获取活动（超时1秒）
+                # 尝试从队列Retrieved活动（超时1秒）
                 try:
                     activity = self._activity_queue.get(timeout=1)
                     
@@ -414,7 +414,7 @@ class ZepGraphMemoryUpdater:
                 self._total_sent += 1
                 self._total_items_sent += len(activities)
                 display_name = self._get_platform_display_name(platform)
-                logger.info(f"成功批量发送 {len(activities)} 条{display_name}活动到图谱 {self.graph_id}")
+                logger.info(f"Success批量发送 {len(activities)} 条{display_name}活动到图谱 {self.graph_id}")
                 logger.debug(f"批量内容预览: {combined_text[:200]}...")
                 return
                 
@@ -452,7 +452,7 @@ class ZepGraphMemoryUpdater:
                 self._platform_buffers[platform] = []
     
     def get_stats(self) -> Dict[str, Any]:
-        """获取统计信息"""
+        """Retrieved统计信息"""
         with self._buffer_lock:
             buffer_sizes = {p: len(b) for p, b in self._platform_buffers.items()}
         
@@ -460,8 +460,8 @@ class ZepGraphMemoryUpdater:
             "graph_id": self.graph_id,
             "batch_size": self.BATCH_SIZE,
             "total_activities": self._total_activities,  # 添加到队列的活动总数
-            "batches_sent": self._total_sent,            # 成功发送的批次数
-            "items_sent": self._total_items_sent,        # 成功发送的活动条数
+            "batches_sent": self._total_sent,            # Success发送的批次数
+            "items_sent": self._total_items_sent,        # Success发送的活动条数
             "failed_count": self._failed_count,          # 发送失败的批次数
             "skipped_count": self._skipped_count,        # 被过滤跳过的活动数（DO_NOTHING）
             "queue_size": self._activity_queue.qsize(),
@@ -472,9 +472,9 @@ class ZepGraphMemoryUpdater:
 
 class ZepGraphMemoryManager:
     """
-    管理多个模拟的Zep图谱记忆更新器
+    管理多模拟的Zep图谱记忆更新器
     
-    每个模拟可以有自己的更新器实例
+    每模拟可以有自己的更新器实例
     """
     
     _updaters: Dict[str, ZepGraphMemoryUpdater] = {}
@@ -506,7 +506,7 @@ class ZepGraphMemoryManager:
     
     @classmethod
     def get_updater(cls, simulation_id: str) -> Optional[ZepGraphMemoryUpdater]:
-        """获取模拟的更新器"""
+        """Retrieved模拟的更新器"""
         return cls._updaters.get(simulation_id)
     
     @classmethod
@@ -541,7 +541,7 @@ class ZepGraphMemoryManager:
     
     @classmethod
     def get_all_stats(cls) -> Dict[str, Dict[str, Any]]:
-        """获取所有更新器的统计信息"""
+        """Retrieved所有更新器的统计信息"""
         return {
             sim_id: updater.get_stats() 
             for sim_id, updater in cls._updaters.items()
