@@ -20,7 +20,7 @@ from app.services.oasis_profile_generator import OasisProfileGenerator, OasisAge
 def test_profile_formats():
     """测试Profile格式"""
     print("=" * 60)
-    print("OASIS Profile格式测试")
+    print("OASIS Profile format test")
     print("=" * 60)
     
     # 创建测试Profile数据
@@ -123,7 +123,7 @@ def test_profile_formats():
         print(f"   [信息] 可选字段: {present_optional}")
     
     print("\n" + "=" * 60)
-    print("测试完成!")
+    print("Test complete!")
     print("=" * 60)
 
 
