@@ -618,7 +618,7 @@ def get_report_sections(report_id: str):
                     {
                         "filename": "section_01.md",
                         "section_index": 1,
-                        "content": "## 执行摘要\\n\\n..."
+                        "content": "## Executive Summary\\n\\n..."
                     },
                     ...
                 ],
@@ -753,8 +753,8 @@ def check_report_status(simulation_id: str):
 @report_bp.route('/<report_id>/agent-log', methods=['GET'])
 def get_agent_log(report_id: str):
     """
-    获取 Report Agent 的详细执行日志
-    
+    Get Report Agent detailed execution log
+
     Get each step of the report generation process in real-time, including:
     - Report start, planning start/complete
     - Each section start, tool calls, LLM responses, completion
@@ -848,8 +848,8 @@ def stream_agent_log(report_id: str):
 @report_bp.route('/<report_id>/console-log', methods=['GET'])
 def get_console_log(report_id: str):
     """
-    获取 Report Agent 的控制台输出日志
-    
+    Get Report Agent console output log
+
     Get real-time console output during report generation (INFO, WARNING, etc.).
     Unlike the structured JSON logs from the agent-log endpoint,
     these are plain-text console-style logs.
@@ -862,8 +862,8 @@ def get_console_log(report_id: str):
             "success": true,
             "data": {
                 "logs": [
-                    "[19:46:14] INFO: 搜索完成: 找到 15 条相关事实",
-                    "[19:46:14] INFO: 图谱搜索: graph_id=xxx, query=...",
+                    "[19:46:14] INFO: Search complete: found 15 related facts",
+                    "[19:46:14] INFO: Graph search: graph_id=xxx, query=...",
                     ...
                 ],
                 "total_lines": 100,

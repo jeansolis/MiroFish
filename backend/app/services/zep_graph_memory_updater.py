@@ -224,7 +224,7 @@ class ZepGraphMemoryUpdater:
     # 发送间隔（秒），避免请求过快
     SEND_INTERVAL = 0.5
     
-    # 重试配置
+    # Retry config
     MAX_RETRIES = 3
     RETRY_DELAY = 2  # 秒
     
@@ -258,7 +258,7 @@ class ZepGraphMemoryUpdater:
         self._running = False
         self._worker_thread: Optional[threading.Thread] = None
         
-        # 统计
+        # Statistics
         self._total_activities = 0  # 实际添加到队列的活动数
         self._total_sent = 0        # 成功发送到Zep的批次数
         self._total_items_sent = 0  # 成功发送到Zep的活动条数

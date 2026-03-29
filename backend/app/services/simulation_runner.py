@@ -1442,7 +1442,7 @@ class SimulationRunner:
             timeout: 超时时间（秒）
 
         Returns:
-            采访结果字典
+            Interview result字典
 
         Raises:
             ValueError: 模拟不存在或环境未运行
@@ -1504,7 +1504,7 @@ class SimulationRunner:
             timeout: 超时时间（秒）
 
         Returns:
-            批量采访结果字典
+            批量Interview result字典
 
         Raises:
             ValueError: 模拟不存在或环境未运行
@@ -1565,7 +1565,7 @@ class SimulationRunner:
             timeout: 超时时间（秒）
 
         Returns:
-            全局采访结果字典
+            全局Interview result字典
         """
         sim_dir = os.path.join(cls.RUN_STATE_DIR, simulation_id)
         if not os.path.exists(sim_dir):
