@@ -1,6 +1,6 @@
 """
-图谱构建服务
-接口2：使用Zep API构建Standalone Graph
+Graph building service
+Interface 2: Build Standalone Graph using Zep API
 """
 
 import os
@@ -38,8 +38,8 @@ class GraphInfo:
 
 class GraphBuilderService:
     """
-    图谱构建服务
-    负责调用Zep API构建知识图谱
+    Graph building service
+    Responsible for calling Zep API to build knowledge graph
     """
     
     def __init__(self, api_key: Optional[str] = None):
@@ -227,11 +227,11 @@ class GraphBuilderService:
             annotations = {}
             
             for attr_def in entity_def.get("attributes", []):
-                attr_name = safe_attr_name(attr_def["name"])  # 使用安全名称
+                attr_name = safe_attr_name(attr_def["name"])  # Use safe name
                 attr_desc = attr_def.get("description", attr_name)
                 # Zep API requires Field description, this is mandatory
                 attrs[attr_name] = Field(description=attr_desc, default=None)
-                annotations[attr_name] = Optional[EntityText]  # Type annotations
+                annotations[attr_name] = Optional[EntityText]
             
             attrs["__annotations__"] = annotations
             
@@ -251,11 +251,11 @@ class GraphBuilderService:
             annotations = {}
             
             for attr_def in edge_def.get("attributes", []):
-                attr_name = safe_attr_name(attr_def["name"])  # 使用安全名称
+                attr_name = safe_attr_name(attr_def["name"])  # Use safe name
                 attr_desc = attr_def.get("description", attr_name)
                 # Zep API requires Field description, this is mandatory
                 attrs[attr_name] = Field(description=attr_desc, default=None)
-                annotations[attr_name] = Optional[str]  # Edge attributes use str type
+                annotations[attr_name] = Optional[str]
             
             attrs["__annotations__"] = annotations
             
@@ -389,7 +389,7 @@ class GraphBuilderService:
                 )
             
             if pending_episodes:
-                time.sleep(3)  # 每3秒检查一次
+                time.sleep(3)  # Check every 3 seconds
         
         if progress_callback:
             progress_callback(f"Processing complete: {completed_count}/{total_episodes}", 1.0)

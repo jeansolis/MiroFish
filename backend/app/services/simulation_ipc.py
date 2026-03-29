@@ -339,7 +339,7 @@ class SimulationIPCServer:
         if not os.path.exists(self.commands_dir):
             return None
         
-        # 按时间排序获取命令文件
+        # Get command files sorted by time
         command_files = []
         for filename in os.listdir(self.commands_dir):
             if filename.endswith('.json'):
@@ -354,23 +354,23 @@ class SimulationIPCServer:
                     data = json.load(f)
                 return IPCCommand.from_dict(data)
             except (json.JSONDecodeError, KeyError, OSError) as e:
-                logger.warning(f"读取命令文件失败: {filepath}, {e}")
+                logger.warning(f"Failed to read command file: {filepath}, {e}")
                 continue
         
         return None
     
     def send_response(self, response: IPCResponse):
         """
-        发送响应
-        
+        Send response
+
         Args:
-            response: IPC响应
+            response: IPC response
         """
         response_file = os.path.join(self.responses_dir, f"{response.command_id}.json")
         with open(response_file, 'w', encoding='utf-8') as f:
             json.dump(response.to_dict(), f, ensure_ascii=False, indent=2)
         
-        # 删除命令文件
+        # Delete command file
         command_file = os.path.join(self.commands_dir, f"{response.command_id}.json")
         try:
             os.remove(command_file)
@@ -378,7 +378,7 @@ class SimulationIPCServer:
             pass
     
     def send_success(self, command_id: str, result: Dict[str, Any]):
-        """发送成功响应"""
+        """Send success response"""
         self.send_response(IPCResponse(
             command_id=command_id,
             status=CommandStatus.COMPLETED,
@@ -386,7 +386,7 @@ class SimulationIPCServer:
         ))
     
     def send_error(self, command_id: str, error: str):
-        """发送错误响应"""
+        """Send error response"""
         self.send_response(IPCResponse(
             command_id=command_id,
             status=CommandStatus.FAILED,

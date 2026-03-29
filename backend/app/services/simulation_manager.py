@@ -1,7 +1,7 @@
 """
-OASISSimulation Manager
-管理Twitter和Reddit双平台并行模拟
-使用预设脚本 + LLM智能生成配置参数
+OASIS Simulation Manager
+Manages Twitter and Reddit dual-platform parallel simulation
+Uses preset scripts + LLM intelligent configuration parameter generation
 """
 
 import os
@@ -58,7 +58,7 @@ class SimulationState:
     profiles_count: int = 0
     entity_types: List[str] = field(default_factory=list)
     
-    # Configuration生成信息
+    # Configuration generation info
     config_generated: bool = False
     config_reasoning: str = ""
     
@@ -242,7 +242,7 @@ class SimulationManager:
         Steps:
         1. Read and filter entities from Zep graph
         2. Generate OASIS Agent Profile for each entity (optional LLM enhancement, supports parallelism)
-        3. Use LLM to intelligently generate simulation configuration parameters（时间、活跃度、发言频率等）
+        3. Use LLM to intelligently generate simulation configuration parameters (time, activity level, posting frequency, etc.)
         4. Save configuration files and profile files
         5. Copy preset scripts to simulation directory
         
@@ -268,7 +268,7 @@ class SimulationManager:
             
             sim_dir = self._get_simulation_dir(simulation_id)
             
-            # ========== 阶段1: 读取并过滤实体 ==========
+            # ========== Phase 1: Read and filter entities ==========
             if progress_callback:
                 progress_callback("reading", 0, "Connecting to Zep graph...")
             
@@ -300,7 +300,7 @@ class SimulationManager:
                 self._save_simulation_state(state)
                 return state
             
-            # ========== 阶段2: 生成Agent Profile ==========
+            # ========== Phase 2: Generate Agent Profiles ==========
             total_entities = len(filtered.entities)
             
             if progress_callback:
