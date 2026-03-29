@@ -1,6 +1,6 @@
 """
-Zep图谱记忆update服务
-将模拟中的Agent活动动态update到Zep图谱中
+Zep graph memory update service
+Dynamically update Agent activities from simulation to Zep graph
 """
 
 import os
@@ -22,7 +22,7 @@ logger = get_logger('mirofish.zep_graph_memory_updater')
 
 @dataclass
 class AgentActivity:
-    """Agent活动记录"""
+    """Agent activity record"""
     platform: str           # twitter / reddit
     agent_id: int
     agent_name: str
@@ -33,12 +33,12 @@ class AgentActivity:
     
     def to_episode_text(self) -> str:
         """
-        将活动转换为可以发送给Zep的文本description
+        Convert activity to text description for Zep
         
-        采用自然语言description格式，让Zep能够从中提取Entity和关系
-        不添加模拟相关的前缀，避免误导图谱update
+        Use natural language description format so Zep can extract entities and relationships
+        Do not add simulation-related prefixes to avoid misleading graph updates
         """
-        # 根据不同的动作type生成不同的description
+        # Generate different descriptions based on action type
         action_descriptions = {
             "CREATE_POST": self._describe_create_post,
             "LIKE_POST": self._describe_like_post,
@@ -57,171 +57,171 @@ class AgentActivity:
         describe_func = action_descriptions.get(self.action_type, self._describe_generic)
         description = describe_func()
         
-        # 直接return "agentname: 活动description" 格式，不添加模拟前缀
+        # Directly return "agent name: activity description" format without simulation prefix
         return f"{self.agent_name}: {description}"
     
     def _describe_create_post(self) -> str:
         content = self.action_args.get("content", "")
         if content:
-            return f"发布了一条帖子：「{content}」"
-        return "发布了一条帖子"
+            return f"Published a post: "{content}""
+        return "Published a post"
     
     def _describe_like_post(self) -> str:
-        """点赞帖子 - 包含帖子原文和作者info"""
+        """Like post - includes post content and author info"""
         post_content = self.action_args.get("post_content", "")
         post_author = self.action_args.get("post_author_name", "")
         
         if post_content and post_author:
-            return f"点赞了{post_author}的帖子：「{post_content}」"
+            return f"Liked {post_author}'s post: "{post_content}""
         elif post_content:
-            return f"点赞了一条帖子：「{post_content}」"
+            return f"Liked a post: "{post_content}""
         elif post_author:
-            return f"点赞了{post_author}的一条帖子"
-        return "点赞了一条帖子"
+            return f"Liked {post_author}'s post"
+        return "Liked a post"
     
     def _describe_dislike_post(self) -> str:
-        """踩帖子 - 包含帖子原文和作者info"""
+        """Dislike post - includes post content and author info"""
         post_content = self.action_args.get("post_content", "")
         post_author = self.action_args.get("post_author_name", "")
         
         if post_content and post_author:
-            return f"踩了{post_author}的帖子：「{post_content}」"
+            return f"Disliked {post_author}'s post: "{post_content}""
         elif post_content:
-            return f"踩了一条帖子：「{post_content}」"
+            return f"Disliked a post: "{post_content}""
         elif post_author:
-            return f"踩了{post_author}的一条帖子"
-        return "踩了一条帖子"
+            return f"Disliked {post_author}'s post"
+        return "Disliked a post"
     
     def _describe_repost(self) -> str:
-        """转发帖子 - 包含原帖content和作者info"""
+        """Repost - includes original content and author info"""
         original_content = self.action_args.get("original_content", "")
         original_author = self.action_args.get("original_author_name", "")
         
         if original_content and original_author:
-            return f"转发了{original_author}的帖子：「{original_content}」"
+            return f"Reposted {original_author}'s post: "{original_content}""
         elif original_content:
-            return f"转发了一条帖子：「{original_content}」"
+            return f"Reposted a post: "{original_content}""
         elif original_author:
-            return f"转发了{original_author}的一条帖子"
-        return "转发了一条帖子"
+            return f"Reposted {original_author}'s post"
+        return "Reposted a post"
     
     def _describe_quote_post(self) -> str:
-        """引用帖子 - 包含原帖content、作者info和引用评论"""
+        """Quote post - includes original content, author info, and quote comment"""
         original_content = self.action_args.get("original_content", "")
         original_author = self.action_args.get("original_author_name", "")
         quote_content = self.action_args.get("quote_content", "") or self.action_args.get("content", "")
         
         base = ""
         if original_content and original_author:
-            base = f"引用了{original_author}的帖子「{original_content}」"
+            base = f"Quoted {original_author}'s post"{original_content}""
         elif original_content:
-            base = f"引用了一条帖子「{original_content}」"
+            base = f"Quoted a post"{original_content}""
         elif original_author:
-            base = f"引用了{original_author}的一条帖子"
+            base = f"Quoted {original_author}'s post"
         else:
-            base = "引用了一条帖子"
+            base = "Quoted a post"
         
         if quote_content:
-            base += f"，并评论道：「{quote_content}」"
+            base += f", and commented:"{quote_content}""
         return base
     
     def _describe_follow(self) -> str:
-        """关注用户 - 包含被关注用户的name"""
+        """Follow user - includes followed user name"""
         target_user_name = self.action_args.get("target_user_name", "")
         
         if target_user_name:
-            return f"关注了用户「{target_user_name}」"
-        return "关注了一用户"
+            return f"Followed user "{target_user_name}""
+        return "Followed a user"
     
     def _describe_create_comment(self) -> str:
-        """发表评论 - 包含评论content和所评论的帖子info"""
+        """Post comment - includes comment content and commented post info"""
         content = self.action_args.get("content", "")
         post_content = self.action_args.get("post_content", "")
         post_author = self.action_args.get("post_author_name", "")
         
         if content:
             if post_content and post_author:
-                return f"在{post_author}的帖子「{post_content}」下评论道：「{content}」"
+                return f"On {post_author}'s post"{post_content}" commented:"{content}""
             elif post_content:
-                return f"在帖子「{post_content}」下评论道：「{content}」"
+                return f"On post "{post_content}" commented:"{content}""
             elif post_author:
-                return f"在{post_author}的帖子下评论道：「{content}」"
-            return f"评论道：「{content}」"
-        return "发表了评论"
+                return f"On {post_author}'s post commented:"{content}""
+            return f"Commented:"{content}""
+        return "Posted a comment"
     
     def _describe_like_comment(self) -> str:
-        """点赞评论 - 包含评论content和作者info"""
+        """Like comment - includes comment content and author info"""
         comment_content = self.action_args.get("comment_content", "")
         comment_author = self.action_args.get("comment_author_name", "")
         
         if comment_content and comment_author:
-            return f"点赞了{comment_author}的评论：「{comment_content}」"
+            return f"Liked {comment_author}'s comment:"{comment_content}""
         elif comment_content:
-            return f"点赞了一条评论：「{comment_content}」"
+            return f"Liked a comment:"{comment_content}""
         elif comment_author:
-            return f"点赞了{comment_author}的一条评论"
-        return "点赞了一条评论"
+            return f"Liked {comment_author}'s comment"
+        return "Liked a comment"
     
     def _describe_dislike_comment(self) -> str:
-        """踩评论 - 包含评论content和作者info"""
+        """Dislike comment - includes comment content and author info"""
         comment_content = self.action_args.get("comment_content", "")
         comment_author = self.action_args.get("comment_author_name", "")
         
         if comment_content and comment_author:
-            return f"踩了{comment_author}的评论：「{comment_content}」"
+            return f"Disliked {comment_author}'s comment:"{comment_content}""
         elif comment_content:
-            return f"踩了一条评论：「{comment_content}」"
+            return f"Disliked a comment:"{comment_content}""
         elif comment_author:
-            return f"踩了{comment_author}的一条评论"
-        return "踩了一条评论"
+            return f"Disliked {comment_author}'s comment"
+        return "Disliked a comment"
     
     def _describe_search(self) -> str:
-        """搜索帖子 - 包含搜索关键词"""
+        """Search posts - 包含Search keyword"""
         query = self.action_args.get("query", "") or self.action_args.get("keyword", "")
-        return f"搜索了「{query}」" if query else "进行了搜索"
+        return f"search了"{query}"" if query else "Performed a search"
     
     def _describe_search_user(self) -> str:
-        """搜索用户 - 包含搜索关键词"""
+        """Search user - 包含Search keyword"""
         query = self.action_args.get("query", "") or self.action_args.get("username", "")
-        return f"搜索了用户「{query}」" if query else "搜索了用户"
+        return f"Searched for user"{query}"" if query else "Searched for user"
     
     def _describe_mute(self) -> str:
-        """屏蔽用户 - 包含被屏蔽用户的name"""
+        """Mute user - 包含被Mute user的name"""
         target_user_name = self.action_args.get("target_user_name", "")
         
         if target_user_name:
-            return f"屏蔽了用户「{target_user_name}」"
-        return "屏蔽了一用户"
+            return f"Muted user "{target_user_name}""
+        return "Muted 一user "
     
     def _describe_generic(self) -> str:
         # 对于Unknown的动作type，生成通用description
-        return f"执行了{self.action_type}操作"
+        return f"执行了{self.action_type}operation"
 
 
 class ZepGraphMemoryUpdater:
     """
     ZepGraph memory updater
     
-    监控模拟的actions日志file，将新的agent活动实时update到Zep图谱中。
-    按平台分组，每累积BATCH_SIZE条活动后批量Send to Zep。
+    监控模拟的actions日志file，将新的agentactivity实时update到Zep图谱中。
+    按平台分组，每累积BATCH_SIZE activities后批量Send to Zep。
     
-    所有有意义的行为都会被update到Zep，action_args中会包含完整的上下文info：
-    - 点赞/踩的帖子原文
-    - 转发/引用的帖子原文
-    - 关注/屏蔽的用户名
-    - 点赞/踩的评论原文
+    所有有意义的行为都会被update到Zep，action_args中会包含完整的上下文info:
+    - Liked/Disliked's post原文
+    - Reposted/Quoted's post原文
+    - 关注/屏蔽的user名
+    - Liked/Disliked's comment原文
     """
     
-    # 批量发送大小（每平台累积多少条后发送）
+    # 批量发送大小(每平台累积多少条后发送)
     BATCH_SIZE = 5
     
-    # 平台name映射（用于控制台显示）
+    # 平台name映射(用于控制台显示)
     PLATFORM_DISPLAY_NAMES = {
         'twitter': '世界1',
         'reddit': '世界2',
     }
     
-    # 发送间隔（秒），避免request过快
+    # 发送间隔(秒)，避免request过快
     SEND_INTERVAL = 0.5
     
     # Retry config
@@ -234,7 +234,7 @@ class ZepGraphMemoryUpdater:
         
         Args:
             graph_id: Zep graph ID
-            api_key: Zep API Key（Options，Default从config读取）
+            api_key: Zep API Key(Options，Default从config读取)
         """
         self.graph_id = graph_id
         self.api_key = api_key or Config.ZEP_API_KEY
@@ -244,10 +244,10 @@ class ZepGraphMemoryUpdater:
         
         self.client = Zep(api_key=self.api_key)
         
-        # 活动队列
+        # Activity queue
         self._activity_queue: Queue = Queue()
         
-        # 按平台分组的活动缓冲区（每平台各自累积到BATCH_SIZE后批量发送）
+        # 按平台分组的activity缓冲区(每平台各自累积到BATCH_SIZE后批量发送)
         self._platform_buffers: Dict[str, List[AgentActivity]] = {
             'twitter': [],
             'reddit': [],
@@ -259,11 +259,11 @@ class ZepGraphMemoryUpdater:
         self._worker_thread: Optional[threading.Thread] = None
         
         # Statistics
-        self._total_activities = 0  # 实际添加到队列的活动数
+        self._total_activities = 0  # 实际添加到队列的activity数
         self._total_sent = 0        # SuccessSend to Zep的批次数
-        self._total_items_sent = 0  # SuccessSend to Zep的活动条数
+        self._total_items_sent = 0  # SuccessSend to Zep的activity条数
         self._failed_count = 0      # 发送failed的批次数
-        self._skipped_count = 0     # 被过滤跳过的活动数（DO_NOTHING）
+        self._skipped_count = 0     # 被过滤跳过的activity数(DO_NOTHING)
         
         logger.info(f"ZepGraphMemoryUpdater 初始化完成: graph_id={graph_id}, batch_size={self.BATCH_SIZE}")
     
@@ -289,7 +289,7 @@ class ZepGraphMemoryUpdater:
         """停止后台工作线程"""
         self._running = False
         
-        # 发送剩余的活动
+        # 发送剩余的activity
         self._flush_remaining()
         
         if self._worker_thread and self._worker_thread.is_alive():
@@ -304,37 +304,37 @@ class ZepGraphMemoryUpdater:
     
     def add_activity(self, activity: AgentActivity):
         """
-        添加一agent活动到队列
+        添加一agentactivity到队列
         
-        所有有意义的行为都会被添加到队列，Including：
-        - CREATE_POST（发帖）
-        - CREATE_COMMENT（评论）
-        - QUOTE_POST（引用帖子）
-        - SEARCH_POSTS（搜索帖子）
-        - SEARCH_USER（搜索用户）
-        - LIKE_POST/DISLIKE_POST（点赞/踩帖子）
-        - REPOST（转发）
-        - FOLLOW（关注）
-        - MUTE（屏蔽）
-        - LIKE_COMMENT/DISLIKE_COMMENT（点赞/踩评论）
+        所有有意义的行为都会被添加到队列，Including:
+        - CREATE_POST(发帖)
+        - CREATE_COMMENT(comment)
+        - QUOTE_POST(Quotedpost)
+        - SEARCH_POSTS(Search posts)
+        - SEARCH_USER(Search user)
+        - LIKE_POST/DISLIKE_POST(Liked/Dislikedpost)
+        - REPOST(Reposted)
+        - FOLLOW(关注)
+        - MUTE(屏蔽)
+        - LIKE_COMMENT/DISLIKE_COMMENT(Liked/Disliked评论)
         
-        action_args中会包含完整的上下文info（如帖子原文、用户名等）。
+        action_args中会包含完整的上下文info(如post原文, user名等)。
         
         Args:
-            activity: Agent活动记录
+            activity: Agent activity record
         """
-        # 跳过DO_NOTHINGtype的活动
+        # 跳过DO_NOTHINGtype的activity
         if activity.action_type == "DO_NOTHING":
             self._skipped_count += 1
             return
         
         self._activity_queue.put(activity)
         self._total_activities += 1
-        logger.debug(f"添加活动到Zep队列: {activity.agent_name} - {activity.action_type}")
+        logger.debug(f"添加activity到Zep队列: {activity.agent_name} - {activity.action_type}")
     
     def add_activity_from_dict(self, data: Dict[str, Any], platform: str):
         """
-        从dictdata添加活动
+        从dictdata添加activity
         
         Args:
             data: 从actions.jsonl解析的dictdata
@@ -357,21 +357,21 @@ class ZepGraphMemoryUpdater:
         self.add_activity(activity)
     
     def _worker_loop(self):
-        """后台工作循环 - 按平台批量发送活动到Zep"""
+        """后台工作循环 - 按平台批量发送activity到Zep"""
         while self._running or not self._activity_queue.empty():
             try:
-                # 尝试从队列Retrieved活动（超时1秒）
+                # 尝试从队列Retrievedactivity(超时1秒)
                 try:
                     activity = self._activity_queue.get(timeout=1)
                     
-                    # 将活动添加到对应平台的缓冲区
+                    # 将activity添加到对应平台的缓冲区
                     platform = activity.platform.lower()
                     with self._buffer_lock:
                         if platform not in self._platform_buffers:
                             self._platform_buffers[platform] = []
                         self._platform_buffers[platform].append(activity)
                         
-                        # check该平台是否达到批量大小
+                        # check该平台是否达到Batch size
                         if len(self._platform_buffers[platform]) >= self.BATCH_SIZE:
                             batch = self._platform_buffers[platform][:self.BATCH_SIZE]
                             self._platform_buffers[platform] = self._platform_buffers[platform][self.BATCH_SIZE:]
@@ -389,16 +389,16 @@ class ZepGraphMemoryUpdater:
     
     def _send_batch_activities(self, activities: List[AgentActivity], platform: str):
         """
-        批量发送活动到Zep图谱（合并为一条文本）
+        Batch send activities to Zep graph(合并为a 条文本)
         
         Args:
-            activities: Agent活动list
+            activities: Agentactivitylist
             platform: 平台name
         """
         if not activities:
             return
         
-        # 将多条活动合并为一条文本，用换行分隔
+        # 将多 activities合并为a 条文本，用换行分隔
         episode_texts = [activity.to_episode_text() for activity in activities]
         combined_text = "\n".join(episode_texts)
         
@@ -414,7 +414,7 @@ class ZepGraphMemoryUpdater:
                 self._total_sent += 1
                 self._total_items_sent += len(activities)
                 display_name = self._get_platform_display_name(platform)
-                logger.info(f"Success批量发送 {len(activities)} 条{display_name}活动到图谱 {self.graph_id}")
+                logger.info(f"Success批量发送 {len(activities)} 条{display_name}activity到图谱 {self.graph_id}")
                 logger.debug(f"批量content预览: {combined_text[:200]}...")
                 return
                 
@@ -427,8 +427,8 @@ class ZepGraphMemoryUpdater:
                     self._failed_count += 1
     
     def _flush_remaining(self):
-        """发送队列和缓冲区中剩余的活动"""
-        # 首先处理队列中剩余的活动，添加到缓冲区
+        """发送队列和缓冲区中剩余的activity"""
+        # 首先处理队列中剩余的activity，添加到缓冲区
         while not self._activity_queue.empty():
             try:
                 activity = self._activity_queue.get_nowait()
@@ -440,12 +440,12 @@ class ZepGraphMemoryUpdater:
             except Empty:
                 break
         
-        # 然后发送各平台缓冲区中剩余的活动（即使不足BATCH_SIZE条）
+        # 然后发送各平台缓冲区中剩余的activity(即使不足BATCH_SIZE条)
         with self._buffer_lock:
             for platform, buffer in self._platform_buffers.items():
                 if buffer:
                     display_name = self._get_platform_display_name(platform)
-                    logger.info(f"发送{display_name}平台剩余的 {len(buffer)} 条活动")
+                    logger.info(f"发送{display_name}平台剩余的 {len(buffer)}  activities")
                     self._send_batch_activities(buffer, platform)
             # 清空所有缓冲区
             for platform in self._platform_buffers:
@@ -459,11 +459,11 @@ class ZepGraphMemoryUpdater:
         return {
             "graph_id": self.graph_id,
             "batch_size": self.BATCH_SIZE,
-            "total_activities": self._total_activities,  # 添加到队列的活动总数
+            "total_activities": self._total_activities,  # 添加到队列的activity总数
             "batches_sent": self._total_sent,            # Success发送的批次数
-            "items_sent": self._total_items_sent,        # Success发送的活动条数
+            "items_sent": self._total_items_sent,        # Success发送的activity条数
             "failed_count": self._failed_count,          # 发送failed的批次数
-            "skipped_count": self._skipped_count,        # 被过滤跳过的活动数（DO_NOTHING）
+            "skipped_count": self._skipped_count,        # 被过滤跳过的activity数(DO_NOTHING)
             "queue_size": self._activity_queue.qsize(),
             "buffer_sizes": buffer_sizes,                # 各平台缓冲区大小
             "running": self._running,
