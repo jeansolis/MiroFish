@@ -672,7 +672,7 @@ class ZepToolsService:
                 attributes=node.attributes or {}
             ))
 
-        logger.info(f"Retrieved到 {len(result)} nodes")
+        logger.info(f"Retrieved {len(result)} nodes")
         return result
 
     def get_all_edges(self, graph_id: str, include_temporal: bool = True) -> List[EdgeInfo]:
@@ -710,7 +710,7 @@ class ZepToolsService:
 
             result.append(edge_info)
 
-        logger.info(f"Retrieved到 {len(result)}  edges")
+        logger.info(f"Retrieved {len(result)} edges")
         return result
     
     def get_node_detail(self, node_uuid: str) -> Optional[NodeInfo]:
@@ -747,103 +747,103 @@ class ZepToolsService:
     
     def get_node_edges(self, graph_id: str, node_uuid: str) -> List[EdgeInfo]:
         """
-        Retrievednodes相关的所有边
-        
-        通过Retrieved图谱所有边，然后过滤出与指定nodes相关的边
-        
+        Retrieve all edges related to a node.
+
+        Retrieves all graph edges, then filters for edges related to the specified node.
+
         Args:
             graph_id: Graph ID
             node_uuid: Node UUID
-            
+
         Returns:
             Edge list
         """
-        logger.info(f"Retrievednodes {node_uuid[:8]}... 的相关边")
-        
+        logger.info(f"Retrieving edges for node {node_uuid[:8]}...")
+
         try:
-            # Retrieved图谱所有边，然后过滤
+            # Retrieve all graph edges, then filter
             all_edges = self.get_all_edges(graph_id)
-            
+
             result = []
             for edge in all_edges:
-                # check边是否与指定nodes相关（作为源或目标）
+                # Check if edge is related to specified node (as source or target)
                 if edge.source_node_uuid == node_uuid or edge.target_node_uuid == node_uuid:
                     result.append(edge)
-            
-            logger.info(f"找到 {len(result)} 条与nodes相关的边")
+
+            logger.info(f"Found {len(result)} edges related to node")
             return result
-            
+
         except Exception as e:
-            logger.warning(f"Retrievednodes边failed: {str(e)}")
+            logger.warning(f"Retrieve node edges failed: {str(e)}")
             return []
-    
+
     def get_entities_by_type(
-        self, 
-        graph_id: str, 
+        self,
+        graph_id: str,
         entity_type: str
     ) -> List[NodeInfo]:
         """
-        按typeRetrievedEntity
-        
+        Retrieve entities by type.
+
         Args:
             graph_id: Graph ID
-            entity_type: Entitytype（如 Student, PublicFigure 等）
-            
+            entity_type: Entity type (e.g., Student, PublicFigure, etc.)
+
         Returns:
-            符合type的Entity list
+            Entity list matching the specified type
         """
-        logger.info(f"Retrievedtype为 {entity_type} 的Entity...")
-        
+        logger.info(f"Retrieving entities of type {entity_type}...")
+
         all_nodes = self.get_all_nodes(graph_id)
-        
+
         filtered = []
         for node in all_nodes:
-            # checklabels是否包含指定type
+            # Check if labels contain the specified type
             if entity_type in node.labels:
                 filtered.append(node)
-        
-        logger.info(f"找到 {len(filtered)}  {entity_type} type的Entity")
+
+        logger.info(f"Found {len(filtered)} {entity_type} entities")
         return filtered
-    
+
     def get_entity_summary(
-        self, 
-        graph_id: str, 
+        self,
+        graph_id: str,
         entity_name: str
     ) -> Dict[str, Any]:
         """
-        Retrieved指定Entity的关系summary
-        
-        搜索与该Entity相关的所有info，并生成summary
-        
+        Retrieve relationship summary for a specified entity.
+
+        Searches all info related to the entity and generates a summary.
+
         Args:
             graph_id: Graph ID
-            entity_name: Entityname
-            
+            entity_name: Entity name
+
         Returns:
-            Entity summaryinfo
+            Entity summary info
         """
-        logger.info(f"RetrievedEntity {entity_name} 的关系summary...")
-        
-        # 先搜索该Entity相关的info
+        logger.info(f"Retrieving entity {entity_name} relationship summary...")
+
+        # Search for info related to this entity
         search_result = self.search_graph(
             graph_id=graph_id,
             query=entity_name,
             limit=20
         )
-        
-        # 尝试在所有nodes中找到该Entity
+
+        # Try to find this entity in all nodes
         all_nodes = self.get_all_nodes(graph_id)
         entity_node = None
         for node in all_nodes:
             if node.name.lower() == entity_name.lower():
                 entity_node = node
                 break
-        
+
         related_edges = []
         if entity_node:
-            # 传入graph_idparameter
+            # Pass graph_id parameter
             related_edges = self.get_node_edges(graph_id, entity_node.uuid)
-        
+
         return {
             "entity_name": entity_name,
             "entity_info": entity_node.to_dict() if entity_node else None,
@@ -851,34 +851,34 @@ class ZepToolsService:
             "related_edges": [e.to_dict() for e in related_edges],
             "total_relations": len(related_edges)
         }
-    
+
     def get_graph_statistics(self, graph_id: str) -> Dict[str, Any]:
         """
-        Retrieved图谱的统计info
-        
+        Retrieve graph statistics.
+
         Args:
             graph_id: Graph ID
-            
+
         Returns:
-            统计info
+            Statistics info
         """
-        logger.info(f"Retrieved图谱 {graph_id} 的统计info...")
-        
+        logger.info(f"Retrieving graph {graph_id} statistics...")
+
         nodes = self.get_all_nodes(graph_id)
         edges = self.get_all_edges(graph_id)
-        
-        # Count entity types分布
+
+        # Count entity type distribution
         entity_types = {}
         for node in nodes:
             for label in node.labels:
                 if label not in ["Entity", "Node"]:
                     entity_types[label] = entity_types.get(label, 0) + 1
-        
-        # Statistics关系type分布
+
+        # Count relationship type distribution
         relation_types = {}
         for edge in edges:
             relation_types[edge.name] = relation_types.get(edge.name, 0) + 1
-        
+
         return {
             "graph_id": graph_id,
             "total_nodes": len(nodes),
@@ -886,27 +886,27 @@ class ZepToolsService:
             "entity_types": entity_types,
             "relation_types": relation_types
         }
-    
+
     def get_simulation_context(
-        self, 
+        self,
         graph_id: str,
         simulation_requirement: str,
         limit: int = 30
     ) -> Dict[str, Any]:
         """
-        Retrieved模拟相关的上下文info
-        
-        综合搜索与Simulation requirement相关的所有info
-        
+        Retrieve simulation-related context info.
+
+        Comprehensively searches all info related to the simulation requirement.
+
         Args:
             graph_id: Graph ID
-            simulation_requirement: Simulation requirementdescription
-            limit: 每类info的数量限制
-            
+            simulation_requirement: Simulation requirement description
+            limit: Quantity limit per info type
+
         Returns:
-            模拟上下文info
+            Simulation context info
         """
-        logger.info(f"Retrieved模拟上下文: {simulation_requirement[:50]}...")
+        logger.info(f"Retrieving simulation context: {simulation_requirement[:50]}...")
         
         # 搜索与Simulation requirement相关的info
         search_result = self.search_graph(
@@ -915,13 +915,13 @@ class ZepToolsService:
             limit=limit
         )
         
-        # Retrieved图谱统计
+        # Retrieve graph statistics
         stats = self.get_graph_statistics(graph_id)
-        
-        # Retrieved所有Entitynodes
+
+        # Retrieve all entity nodes
         all_nodes = self.get_all_nodes(graph_id)
-        
-        # 筛选有实际type的Entity（非纯Entitynodes）
+
+        # Filter entities with actual types (not pure Entity nodes)
         entities = []
         for node in all_nodes:
             custom_labels = [l for l in node.labels if l not in ["Entity", "Node"]]
@@ -936,11 +936,11 @@ class ZepToolsService:
             "simulation_requirement": simulation_requirement,
             "related_facts": search_result.facts,
             "graph_statistics": stats,
-            "entities": entities[:limit],  # 限制数量
+            "entities": entities[:limit],  # Limit count
             "total_entities": len(entities)
         }
     
-    # ========== 核心检索工具（优化后） ==========
+    # ========== Core search tools (optimized) ==========
     
     def insight_forge(
         self,
@@ -951,26 +951,26 @@ class ZepToolsService:
         max_sub_queries: int = 5
     ) -> InsightForgeResult:
         """
-        【InsightForge - 深度洞察检索】
-        
-        最强大的混合检索function，自动分解问题并多维度检索：
-        1. 使用LLM将问题分解为多Sub-questions
-        2. 对每Sub-questions进行语义搜索
-        3. 提取Related entity并Retrieved其详细info
-        4. 追踪关系链
-        5. 整合所有result，生成深度洞察
-        
+        [InsightForge - Deep Insight Retrieval]
+
+        The most powerful hybrid retrieval function, auto-decomposes questions and retrieves multi-dimensionally:
+        1. Use LLM to decompose questions into multiple sub-queries
+        2. Perform semantic search for each sub-query
+        3. Extract related entities and retrieve their detailed info
+        4. Trace relationship chains
+        5. Integrate all results, generate deep insights
+
         Args:
             graph_id: Graph ID
-            query: 用户问题
-            simulation_requirement: Simulation requirementdescription
-            report_context: 报告上下文（Options，用于更精准的Sub-questions生成）
-            max_sub_queries: 最大Sub-questions数量
-            
+            query: User question
+            simulation_requirement: Simulation requirement description
+            report_context: Report context (optional, for more precise sub-query generation)
+            max_sub_queries: Maximum number of sub-queries
+
         Returns:
             InsightForgeResult: Deep insight retrieval result
         """
-        logger.info(f"InsightForge 深度洞察检索: {query[:50]}...")
+        logger.info(f"InsightForge deep insight retrieval: {query[:50]}...")
         
         result = InsightForgeResult(
             query=query,
@@ -978,7 +978,7 @@ class ZepToolsService:
             sub_queries=[]
         )
         
-        # Step 1: 使用LLM生成Sub-questions
+        # Step 1: Use LLM to generate sub-queries
         sub_queries = self._generate_sub_queries(
             query=query,
             simulation_requirement=simulation_requirement,
@@ -986,9 +986,9 @@ class ZepToolsService:
             max_queries=max_sub_queries
         )
         result.sub_queries = sub_queries
-        logger.info(f"生成 {len(sub_queries)} Sub-questions")
-        
-        # Step 2: 对每Sub-questions进行语义搜索
+        logger.info(f"Generated {len(sub_queries)} sub-queries")
+
+        # Step 2: Perform semantic search for each sub-query
         all_facts = []
         all_edges = []
         seen_facts = set()
@@ -1008,7 +1008,7 @@ class ZepToolsService:
             
             all_edges.extend(search_result.edges)
         
-        # 对原始问题也进行搜索
+        # Also search the original question
         main_search = self.search_graph(
             graph_id=graph_id,
             query=query,
@@ -1023,7 +1023,7 @@ class ZepToolsService:
         result.semantic_facts = all_facts
         result.total_facts = len(all_facts)
         
-        # Step 3: 从边中提取Related entityUUID，只Retrieved这些Entity的info（不Retrieved全部nodes）
+        # Step 3: Extract related entity UUIDs from edges, only retrieve these entities' info (not all nodes)
         entity_uuids = set()
         for edge_data in all_edges:
             if isinstance(edge_data, dict):
@@ -1034,21 +1034,21 @@ class ZepToolsService:
                 if target_uuid:
                     entity_uuids.add(target_uuid)
         
-        # Retrieved所有Related entity的details（No limit on count，完整output）
+        # Retrieve all related entity details (no limit, full output)
         entity_insights = []
-        node_map = {}  # 用于后续关系链构建
-        
-        for uuid in list(entity_uuids):  # 处理所有Entity，不截断
+        node_map = {}  # For relationship chain building
+
+        for uuid in list(entity_uuids):  # Process all entities, no truncation
             if not uuid:
                 continue
             try:
-                # 单独Retrieved每 related nodes的info
+                # Retrieve each related node's info individually
                 node = self.get_node_detail(uuid)
                 if node:
                     node_map[uuid] = node
                     entity_type = next((l for l in node.labels if l not in ["Entity", "Node"]), "Entity")
                     
-                    # Retrieved该Entity相关的所有事实（不截断）
+                    # Retrieve all facts related to this entity (no truncation)
                     related_facts = [
                         f for f in all_facts 
                         if node.name.lower() in f.lower()
@@ -1059,18 +1059,18 @@ class ZepToolsService:
                         "name": node.name,
                         "type": entity_type,
                         "summary": node.summary,
-                        "related_facts": related_facts  # 完整output，不截断
+                        "related_facts": related_facts  # Full output, no truncation
                     })
             except Exception as e:
-                logger.debug(f"Retrievednodes {uuid} failed: {e}")
+                logger.debug(f"Retrieve node {uuid} failed: {e}")
                 continue
         
         result.entity_insights = entity_insights
         result.total_entities = len(entity_insights)
         
-        # Step 4: 构建所有关系链（No limit on count）
+        # Step 4: Build all relationship chains (no limit)
         relationship_chains = []
-        for edge_data in all_edges:  # 处理所有边，不截断
+        for edge_data in all_edges:  # Process all edges, no truncation
             if isinstance(edge_data, dict):
                 source_uuid = edge_data.get('source_node_uuid', '')
                 target_uuid = edge_data.get('target_node_uuid', '')
@@ -1086,7 +1086,7 @@ class ZepToolsService:
         result.relationship_chains = relationship_chains
         result.total_relationships = len(relationship_chains)
         
-        logger.info(f"InsightForge完成: {result.total_facts} facts, {result.total_entities}Entity, {result.total_relationships}条关系")
+        logger.info(f"InsightForge complete: {result.total_facts} facts, {result.total_entities} entities, {result.total_relationships} relationships")
         return result
     
     def _generate_sub_queries(
@@ -1097,27 +1097,27 @@ class ZepToolsService:
         max_queries: int = 5
     ) -> List[str]:
         """
-        使用LLM生成Sub-questions
-        
-        将复杂问题分解为多可以独立检索的Sub-questions
+        Use LLM to generate sub-queries.
+
+        Decompose a complex question into multiple independently searchable sub-queries.
         """
-        system_prompt = """你 is a 专业的问题分析专家。你的任务是将一复杂问题分解为多可以在模拟世界中独立观察的Sub-questions。
+        system_prompt = """You are a professional question analysis expert. Your task is to decompose a complex question into multiple sub-queries that can be independently observed in a simulation world.
 
-要求：
-1. 每Sub-questions应该足够具体，可以在模拟世界中找到相关的Agent行为或事件
-2. Sub-questions应该覆盖原问题的不同维度（如：谁、什么、为什么、怎么样、何时、何地）
-3. Sub-questions应该与模拟场景相关
-4. returnJSON格式：{"sub_queries": ["Sub-questions1", "Sub-questions2", ...]}"""
+Requirements:
+1. Each sub-query should be specific enough to find related Agent behaviors or events in the simulation world
+2. Sub-queries should cover different dimensions of the original question (e.g., who, what, why, how, when, where)
+3. Sub-queries should be relevant to the simulation scenario
+4. Return JSON format: {"sub_queries": ["sub-query 1", "sub-query 2", ...]}"""
 
-        user_prompt = f"""Simulation requirement背景：
+        user_prompt = f"""Simulation requirement background:
 {simulation_requirement}
 
-{f"报告上下文：{report_context[:500]}" if report_context else ""}
+{f"Report context: {report_context[:500]}" if report_context else ""}
 
-请将以下问题分解为{max_queries}Sub-questions：
+Please decompose the following question into {max_queries} sub-queries:
 {query}
 
-returnJSON格式的Sub-questionslist。"""
+Return a JSON format sub-query list."""
 
         try:
             response = self.llm.chat_json(
@@ -1129,17 +1129,17 @@ returnJSON格式的Sub-questionslist。"""
             )
             
             sub_queries = response.get("sub_queries", [])
-            # ensure是stringlist
+            # Ensure it's a string list
             return [str(sq) for sq in sub_queries[:max_queries]]
-            
+
         except Exception as e:
-            logger.warning(f"生成Sub-questionsfailed: {str(e)}，使用DefaultSub-questions")
-            # 降级：return基于原问题的变体
+            logger.warning(f"Generate sub-queries failed: {str(e)}, using default sub-queries")
+            # Fallback: return variants based on original question
             return [
                 query,
-                f"{query} 的主要参与者",
-                f"{query} 的原因和影响",
-                f"{query} 的发展过程"
+                f"Key participants in {query}",
+                f"Causes and impacts of {query}",
+                f"Development process of {query}"
             ][:max_queries]
     
     def panorama_search(
