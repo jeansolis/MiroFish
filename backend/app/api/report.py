@@ -357,7 +357,7 @@ def list_reports():
     
     QueryParameters:
         simulation_id: Filter by simulation ID (optional)
-        limit: Return count limit（默认50）
+        limit: Return count limit (default 50)
     
     Returns:
         {
@@ -474,8 +474,8 @@ def chat_with_report_agent():
     Request (JSON):
         {
             "simulation_id": "sim_xxxx",        // Required, simulation ID
-            "message": "Please explain the public opinion trend",    // 必填，用户消息
-            "chat_history": [                   // 可选，对话历史
+            "message": "Please explain the public opinion trend",    // Required, user message
+            "chat_history": [                   // Optional, chat history
                 {"role": "user", "content": "..."},
                 {"role": "assistant", "content": "..."}
             ]
@@ -485,9 +485,9 @@ def chat_with_report_agent():
         {
             "success": true,
             "data": {
-                "response": "Agent回复...",
-                "tool_calls": [调用的工具列表],
-                "sources": [信息来源]
+                "response": "Agent response...",
+                "tool_calls": [list of tools called],
+                "sources": [information sources]
             }
         }
     """
