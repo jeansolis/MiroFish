@@ -484,7 +484,7 @@ def prepare_simulation():
             logger.info(f"Expected entity count: {filtered_preview.filtered_count}, types: {filtered_preview.entity_types}")
         except Exception as e:
             logger.warning(f"Synchronous entity count failed (will retry in background task): {e}")
-            # Failed不影响Subsequent process，Background task will re-Retrieved
+            # Failure does not affect subsequent process, background task will re-retrieve
         
         # Create async task
         task_manager = TaskManager()
@@ -646,7 +646,7 @@ def get_prepare_status():
     Request (JSON):
         {
             "task_id": "task_xxxx",          // Optional, task_id from prepare
-            "simulation_id": "sim_xxxx"      // Optional, simulation ID（For checking completed preparation）
+            "simulation_id": "sim_xxxx"      // Optional, simulation ID(For checking completed preparation)
         }
     
     Returns:
@@ -825,8 +825,8 @@ def _get_report_id_for_simulation(simulation_id: str) -> str:
     import json
     from datetime import datetime
     
-    # reports Directory path：backend/uploads/reports
-    # __file__ 是 app/api/simulation.py，Need to go up two levels to backend/
+    # reports Directory path:backend/uploads/reports
+    # __file__ is app/api/simulation.py, need to go up two levels to backend/
     reports_dir = os.path.join(os.path.dirname(__file__), '../../uploads/reports')
     if not os.path.exists(reports_dir):
         return None
@@ -876,7 +876,7 @@ def get_simulation_history():
     For homepage historical project display, returns simulation list with project name, description, and other details
     
     QueryParameters:
-        limit: Return count limit（Default 20）
+        limit: Return count limit(Default 20)
     
     Returns:
         {
@@ -1023,9 +1023,9 @@ def get_simulation_profiles(simulation_id: str):
 @simulation_bp.route('/<simulation_id>/profiles/realtime', methods=['GET'])
 def get_simulation_profiles_realtime(simulation_id: str):
     """
-    Real-time get simulation Agent Profiles（For real-time progress viewing during generation）
+    Real-time get simulation Agent Profiles(For real-time progress viewing during generation)
     
-    Difference from /profiles endpoint：
+    Difference from /profiles endpoint:
     - Read files directly, bypassing SimulationManager
     - Suitable for real-time viewing during generation
     - Returns extra metadata (file modification time, generation status, etc.)
@@ -1133,9 +1133,9 @@ def get_simulation_profiles_realtime(simulation_id: str):
 @simulation_bp.route('/<simulation_id>/config/realtime', methods=['GET'])
 def get_simulation_config_realtime(simulation_id: str):
     """
-    Real-time retrieve simulation configuration（For real-time progress viewing during generation）
+    Real-time retrieve simulation configuration(For real-time progress viewing during generation)
     
-    Difference from /config endpoint：
+    Difference from /config endpoint:
     - Read files directly, bypassing SimulationManager
     - Suitable for real-time viewing during generation
     - Returns extra metadata (file modification time, generation status, etc.)
@@ -1255,10 +1255,10 @@ def get_simulation_config(simulation_id: str):
     """
     Retrieve simulation configuration (complete LLM smart-generated config)
     
-    Returns including：
-        - time_config: Time config（Simulation duration, rounds, peak/off-peak periods）
+    Returns including:
+        - time_config: Time config(Simulation duration, rounds, peak/off-peak periods)
         - agent_configs: Per-agent activity config (activity level, posting frequency, stance, etc.)
-        - event_config: Event config（Initial posts, hot topics）
+        - event_config: Event config(Initial posts, hot topics)
         - platform_configs: Platform config
         - generation_reasoning: LLM configuration reasoning
     """
@@ -1320,7 +1320,7 @@ def download_simulation_script(script_name: str):
     """
     Download simulation run script file (generic scripts in backend/scripts/)
     
-    script_name options：
+    script_name options:
         - run_twitter_simulation.py
         - run_reddit_simulation.py
         - run_parallel_simulation.py
@@ -1459,11 +1459,11 @@ def start_simulation():
 
     About force parameter:
         - When enabled, if simulation is running or completed, stops and cleans run logs first
-        - Cleaned content includes：run_state.json, actions.jsonl, simulation.log 等
-        - Does not clean config files（simulation_config.json）and profile files
+        - Cleaned content includes: run_state.json, actions.jsonl, simulation.log, etc.
+        - Does not clean config files(simulation_config.json)and profile files
         - Suitable for scenarios requiring simulation re-run
 
-    About enable_graph_memory_update：
+    About enable_graph_memory_update:
         - When enabled, all Agent activities (posts, comments, likes, etc.) update to Zep graph in real-time
         - This lets the graph "remember" the simulation for later analysis or AI chat
         - Requires the associated project to have a valid graph_id
@@ -1495,9 +1495,9 @@ def start_simulation():
             }), 400
 
         platform = data.get('platform', 'parallel')
-        max_rounds = data.get('max_rounds')  # Options：Max simulation rounds
-        enable_graph_memory_update = data.get('enable_graph_memory_update', False)  # Options：Whether graph memory update is enabled
-        force = data.get('force', False)  # Options：Force restart
+        max_rounds = data.get('max_rounds')  # Options:Max simulation rounds
+        enable_graph_memory_update = data.get('enable_graph_memory_update', False)  # Options:Whether graph memory update is enabled
+        force = data.get('force', False)  # Options:Force restart
 
         # Validate max_rounds parameter
         if max_rounds is not None:
@@ -1532,7 +1532,7 @@ def start_simulation():
 
         force_restarted = False
         
-        # Smart status handling：If preparation is complete, allow restart
+        # Smart status handling:If preparation is complete, allow restart
         if state.status != SimulationStatus.READY:
             # Check if preparation is complete
             is_prepared, prepare_info = _check_simulation_prepared(simulation_id)
@@ -1566,7 +1566,7 @@ def start_simulation():
                     force_restarted = True
 
                 # Process does not exist or has ended, resetting status to ready
-                logger.info(f"模拟 {simulation_id} Preparation complete, resetting status to ready (original status: {state.status.value}）")
+                logger.info(f"Simulation {simulation_id} preparation complete, resetting status to ready (original status: {state.status.value})")
                 state.status = SimulationStatus.READY
                 manager._save_simulation_state(state)
             else:
@@ -1763,7 +1763,7 @@ def get_run_status_detail(simulation_id: str):
     For frontend real-time display
     
     QueryParameters:
-        platform: Filter by platform（twitter/reddit，Options）
+        platform: Filter by platform(twitter/reddit，Options)
     
     Returns:
         {
@@ -1787,8 +1787,8 @@ def get_run_status_detail(simulation_id: str):
                     },
                     ...
                 ],
-                "twitter_actions": [...],  # Twitter 平台的所有动作
-                "reddit_actions": [...]    # Reddit 平台的所有动作
+                "twitter_actions": [...],  # All Twitter platform actions
+                "reddit_actions": [...]    # All Reddit platform actions
             }
         }
     """
@@ -1825,7 +1825,7 @@ def get_run_status_detail(simulation_id: str):
             platform="reddit"
         ) if not platform_filter or platform_filter == "reddit" else []
         
-        # Retrieve current round actions（recent_actions Only show latest round）
+        # Retrieve current round actions(recent_actions Only show latest round)
         current_round = run_state.current_round
         recent_actions = SimulationRunner.get_all_actions(
             simulation_id=simulation_id,
@@ -1862,9 +1862,9 @@ def get_simulation_actions(simulation_id: str):
     Retrieve Agent action history in simulation
     
     QueryParameters:
-        limit: Return count（Default 100）
+        limit: Return count(Default 100)
         offset: Offset (default 0)
-        platform: Filter by platform（twitter/reddit）
+        platform: Filter by platform(twitter/reddit)
         agent_id: Filter by Agent ID
         round_num: Filter by round
     
@@ -1985,8 +1985,8 @@ def get_simulation_posts(simulation_id: str):
     Retrieve posts in simulation
     
     QueryParameters:
-        platform: Platform type（twitter/reddit）
-        limit: Return count（Default 50）
+        platform: Platform type(twitter/reddit)
+        limit: Return count(Default 50)
         offset: Offset
     
     Returns post list (read from SQLite database)
@@ -2145,18 +2145,18 @@ def interview_agent():
         {
             "simulation_id": "sim_xxxx",       // Required, simulation ID
             "agent_id": 0,                     // Required，Agent ID
-            "prompt": "你对这件事有什么看法？",  // Required，Interview question
-            "platform": "twitter",             // Options，Specify platform（twitter/reddit）
+            "prompt": "What are your views on this matter?",  // Required，Interview question
+            "platform": "twitter",             // Options，Specify platform(twitter/reddit)
                                                // When not specified: dual-platform simulation interviews both platforms
             "timeout": 60                      // Options，Timeout (seconds)，Default 60
         }
 
-    Response (no platform specified, dual-platform mode)：
+    Response (no platform specified, dual-platform mode):
         {
             "success": true,
             "data": {
                 "agent_id": 0,
-                "prompt": "你对这件事有什么看法？",
+                "prompt": "What are your views on this matter?",
                 "result": {
                     "agent_id": 0,
                     "prompt": "...",
@@ -2169,15 +2169,15 @@ def interview_agent():
             }
         }
 
-    Response (platform specified)：
+    Response (platform specified):
         {
             "success": true,
             "data": {
                 "agent_id": 0,
-                "prompt": "你对这件事有什么看法？",
+                "prompt": "What are your views on this matter?",
                 "result": {
                     "agent_id": 0,
-                    "response": "我认为...",
+                    "response": "I think...",
                     "platform": "twitter",
                     "timestamp": "2025-12-08T10:00:00"
                 },
@@ -2191,7 +2191,7 @@ def interview_agent():
         simulation_id = data.get('simulation_id')
         agent_id = data.get('agent_id')
         prompt = data.get('prompt')
-        platform = data.get('platform')  # Options：twitter/reddit/None
+        platform = data.get('platform')  # Options:twitter/reddit/None
         timeout = data.get('timeout', 60)
         
         if not simulation_id:
@@ -2216,7 +2216,7 @@ def interview_agent():
         if platform and platform not in ("twitter", "reddit"):
             return jsonify({
                 "success": False,
-                "error": "platform parameter can only be 'twitter' 或 'reddit'"
+                "error": "platform parameter can only be 'twitter' or 'reddit'"
             }), 400
         
         # Check environment status
@@ -2276,12 +2276,12 @@ def interview_agents_batch():
             "interviews": [                    // Required，Interview list
                 {
                     "agent_id": 0,
-                    "prompt": "你对A有什么看法？",
-                    "platform": "twitter"      // Options，指定该Agent的采访平台
+                    "prompt": "What are your views on A?",
+                    "platform": "twitter"      // Optional, specify interview platform for this Agent
                 },
                 {
                     "agent_id": 1,
-                    "prompt": "你对B有什么看法？"  // If no platform specified, uses default
+                    "prompt": "What are your views on B?"  // If no platform specified, uses default
                 }
             ],
             "platform": "reddit",              // Options，Default platform (overridden by each item platform)
@@ -2312,7 +2312,7 @@ def interview_agents_batch():
 
         simulation_id = data.get('simulation_id')
         interviews = data.get('interviews')
-        platform = data.get('platform')  # Options：twitter/reddit/None
+        platform = data.get('platform')  # Options:twitter/reddit/None
         timeout = data.get('timeout', 120)
 
         if not simulation_id:
@@ -2331,7 +2331,7 @@ def interview_agents_batch():
         if platform and platform not in ("twitter", "reddit"):
             return jsonify({
                 "success": False,
-                "error": "platform parameter can only be 'twitter' 或 'reddit'"
+                "error": "platform parameter can only be 'twitter' or 'reddit'"
             }), 400
 
         # Validate each interview item
@@ -2339,19 +2339,19 @@ def interview_agents_batch():
             if 'agent_id' not in interview:
                 return jsonify({
                     "success": False,
-                    "error": f"Interview list第{i+1}item missing agent_id"
+                    "error": f"Interview list item {i+1} missing agent_id"
                 }), 400
             if 'prompt' not in interview:
                 return jsonify({
                     "success": False,
-                    "error": f"Interview list第{i+1}item missing prompt"
+                    "error": f"Interview list item {i+1} missing prompt"
                 }), 400
-            # validate每项的platform（if有）
+            # Validate each item platform (if provided)
             item_platform = interview.get('platform')
             if item_platform and item_platform not in ("twitter", "reddit"):
                 return jsonify({
                     "success": False,
-                    "error": f"Interview list第{i+1}item platform can only be 'twitter' 或 'reddit'"
+                    "error": f"Interview list item {i+1} platform can only be 'twitter' or 'reddit'"
                 }), 400
 
         # Check environment status
@@ -2411,8 +2411,8 @@ def interview_all_agents():
     Request (JSON):
         {
             "simulation_id": "sim_xxxx",            // Required, simulation ID
-            "prompt": "你对这件事整体有什么看法？",  // Required，Interview question (same for all Agents)
-            "platform": "reddit",                   // Options，Specify platform（twitter/reddit）
+            "prompt": "What are your overall views on this matter?",  // Required，Interview question (same for all Agents)
+            "platform": "reddit",                   // Options，Specify platform(twitter/reddit)
                                                     // When not specified: dual-platform interviews each Agent on both platforms
             "timeout": 180                          // Options，Timeout (seconds)，Default 180
         }
@@ -2439,7 +2439,7 @@ def interview_all_agents():
 
         simulation_id = data.get('simulation_id')
         prompt = data.get('prompt')
-        platform = data.get('platform')  # Options：twitter/reddit/None
+        platform = data.get('platform')  # Options:twitter/reddit/None
         timeout = data.get('timeout', 180)
 
         if not simulation_id:
@@ -2458,7 +2458,7 @@ def interview_all_agents():
         if platform and platform not in ("twitter", "reddit"):
             return jsonify({
                 "success": False,
-                "error": "platform parameter can only be 'twitter' 或 'reddit'"
+                "error": "platform parameter can only be 'twitter' or 'reddit'"
             }), 400
 
         # Check environment status
@@ -2514,7 +2514,7 @@ def get_interview_history():
     Request (JSON):
         {
             "simulation_id": "sim_xxxx",  // Required, simulation ID
-            "platform": "reddit",          // Options，Platform type（reddit/twitter）
+            "platform": "reddit",          // Options，Platform type(reddit/twitter)
                                            // If not specified, returns history from both platforms
             "agent_id": 0,                 // Options，Only retrieve this Agent interview history
             "limit": 100                   // Options，Return count, default100
@@ -2528,8 +2528,8 @@ def get_interview_history():
                 "history": [
                     {
                         "agent_id": 0,
-                        "response": "我认为...",
-                        "prompt": "你对这件事有什么看法？",
+                        "response": "I think...",
+                        "prompt": "What are your views on this matter?",
                         "timestamp": "2025-12-08T10:00:00",
                         "platform": "reddit"
                     },
@@ -2648,7 +2648,7 @@ def close_simulation_env():
     
     Send close environment command to simulation for graceful exit from command wait mode.
     
-    注意：This is different from /stop endpoint which forcefully terminates the process，
+    Note: This is different from /stop endpoint which forcefully terminates the process.
     This endpoint lets the simulation gracefully close the environment and exit.
     
     Request (JSON):

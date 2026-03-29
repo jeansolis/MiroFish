@@ -199,14 +199,14 @@ class SimulationParameters:
 
 class SimulationConfigGenerator:
     """
-    Simulation configurationSmart generation器
+    Simulation Configuration Smart Generator
     
-    使用LLM分析Simulation requirement、文档content、图谱Entityinfo，
+    Uses LLM to analyze simulation requirements, document content, and graph entity info.
     Auto-generate optimal simulation parameter configuration
     
-    采用Step-by-step generation策略：
-    1. Generate time config和Event config（轻量级）
-    2. 分批Generate Agent config（10-20 per batch）
+    Uses step-by-step generation strategy:
+    1. Generate time config and event config (lightweight)
+    2. Generate Agent config in batches (10-20 per batch)
     3. Generate platform config
     """
     
@@ -215,11 +215,11 @@ class SimulationConfigGenerator:
     # Agents per batch
     AGENTS_PER_BATCH = 15
     
-    # 各Step的上下文截断长度（字符数）
+    # Context truncation length per step (characters)
     TIME_CONFIG_CONTEXT_LENGTH = 10000   # Time config
     EVENT_CONFIG_CONTEXT_LENGTH = 8000   # Event config
     ENTITY_SUMMARY_LENGTH = 300          # Entity summary
-    AGENT_SUMMARY_LENGTH = 300           # Agentconfig中的Entity summary
+    AGENT_SUMMARY_LENGTH = 300           # Entity summary in Agent config
     ENTITIES_PER_TYPE_DISPLAY = 20       # Display count per entity type
     
     def __init__(
@@ -253,7 +253,7 @@ class SimulationConfigGenerator:
         progress_callback: Optional[Callable[[int, int, str], None]] = None,
     ) -> SimulationParameters:
         """
-        Smart generation完整的Simulation configuration（Step-by-step generation）
+        Smart generate complete simulation configuration (step-by-step generation)
         
         Args:
             simulation_id: Simulation ID
@@ -273,7 +273,7 @@ class SimulationConfigGenerator:
         
         # Calculate total steps
         num_batches = math.ceil(len(entities) / self.AGENTS_PER_BATCH)
-        total_steps = 3 + num_batches  # Time config + Event config + N批Agent + Platform config
+        total_steps = 3 + num_batches  # Time config + Event config + N Agent batches + Platform config
         current_step = 0
         
         def report_progress(step: int, message: str):
@@ -305,7 +305,7 @@ class SimulationConfigGenerator:
         event_config = self._parse_event_config(event_config_result)
         reasoning_parts.append(f"Event config: {event_config_result.get('reasoning', 'Success')}")
         
-        # ========== Step3-N: 分批Generate Agent config ==========
+        # ========== Step3-N: Generate Agent config in batches ==========
         all_agent_configs = []
         for batch_idx in range(num_batches):
             start_idx = batch_idx * self.AGENTS_PER_BATCH
@@ -325,7 +325,7 @@ class SimulationConfigGenerator:
             )
             all_agent_configs.extend(batch_configs)
         
-        reasoning_parts.append(f"Agentconfig: Success生成 {len(all_agent_configs)} ")
+        reasoning_parts.append(f"Agent config: Successfully generated {len(all_agent_configs)} ")
         
         # ========== Assign publishers to initial posts Agent ==========
         logger.info("Assign appropriate publisher Agents to initial posts...")
@@ -333,7 +333,7 @@ class SimulationConfigGenerator:
         assigned_count = len([p for p in event_config.initial_posts if p.get("poster_agent_id") is not None])
         reasoning_parts.append(f"Initial post assignment: {assigned_count}  posts assigned publishers")
         
-        # ========== 最后一步: Generate platform config ==========
+        # ========== Last step: Generate platform config ==========
         report_progress(total_steps, "Generate platform config...")
         twitter_config = None
         reddit_config = None
@@ -374,7 +374,7 @@ class SimulationConfigGenerator:
             generation_reasoning=" | ".join(reasoning_parts)
         )
         
-        logger.info(f"Simulation configuration生成完成: {len(params.agent_configs)}  Agent configs")
+        logger.info(f"Simulation configuration generation complete: {len(params.agent_configs)}  Agent configs")
         
         return params
     
@@ -407,7 +407,7 @@ class SimulationConfigGenerator:
         return "\n".join(context_parts)
     
     def _summarize_entities(self, entities: List[EntityNode]) -> str:
-        """生成Entity summary"""
+        """Generate entity summary"""
         lines = []
         
         # Group by type
@@ -420,7 +420,7 @@ class SimulationConfigGenerator:
         
         for entity_type, type_entities in by_type.items():
             lines.append(f"\n### {entity_type} ({len(type_entities)})")
-            # 使用config的显示数量和summary长度
+            # Use configured display count and summary length
             display_count = self.ENTITIES_PER_TYPE_DISPLAY
             summary_len = self.ENTITY_SUMMARY_LENGTH
             for e in type_entities[:display_count]:
@@ -481,7 +481,7 @@ class SimulationConfigGenerator:
         raise last_error or Exception("LLM call failed")
     
     def _fix_truncated_json(self, content: str) -> str:
-        """修复truncated的JSON"""
+        """Fix truncated JSON"""
         content = content.strip()
         
         # Count unclosed brackets
@@ -502,7 +502,7 @@ class SimulationConfigGenerator:
         """Try to fixconfigJSON"""
         import re
         
-        # 修复truncated的情况
+        # Fix truncation
         content = self._fix_truncated_json(content)
         
         # Extract JSON part
@@ -522,7 +522,7 @@ class SimulationConfigGenerator:
             try:
                 return json.loads(json_str)
             except:
-                # 尝试Remove all control characters
+                # Try to remove all control characters
                 json_str = re.sub(r'[\x00-\x1f\x7f-\x9f]', ' ', json_str)
                 json_str = re.sub(r'\s+', ' ', json_str)
                 try:
@@ -608,11 +608,11 @@ Field descriptions:
     
     def _parse_time_config(self, result: Dict[str, Any], num_entities: int) -> TimeSimulationConfig:
         """Parse time config result，And validate agents_per_hour does not exceed total agent count"""
-        # Retrieved原始值
+        # Get original values
         agents_per_hour_min = result.get("agents_per_hour_min", max(1, num_entities // 15))
         agents_per_hour_max = result.get("agents_per_hour_max", max(5, num_entities // 5))
         
-        # Validate and correct：Ensure not exceeding total agent count
+        # Validate and correct:Ensure not exceeding total agent count
         if agents_per_hour_min > num_entities:
             logger.warning(f"agents_per_hour_min ({agents_per_hour_min}) Exceeds total Agent count ({num_entities})，Corrected")
             agents_per_hour_min = max(1, num_entities // 10)
@@ -624,7 +624,7 @@ Field descriptions:
         # Ensure min < max
         if agents_per_hour_min >= agents_per_hour_max:
             agents_per_hour_min = max(1, agents_per_hour_max // 2)
-            logger.warning(f"agents_per_hour_min >= max，Corrected为 {agents_per_hour_min}")
+            logger.warning(f"agents_per_hour_min >= max, corrected to {agents_per_hour_min}")
         
         return TimeSimulationConfig(
             total_simulation_hours=result.get("total_simulation_hours", 72),
@@ -730,7 +730,7 @@ Return JSON format (no markdown):
         """
         Assign appropriate publisher Agents to initial posts
         
-        根据每帖子的 poster_type 匹配最合适的 agent_id
+        Match most suitable agent_id based on each post poster_type
         """
         if not event_config.initial_posts:
             return event_config
@@ -743,7 +743,7 @@ Return JSON format (no markdown):
                 agents_by_type[etype] = []
             agents_by_type[etype].append(agent)
         
-        # Type alias mapping（Handle different formats LLM may output）
+        # Type alias mapping(Handle different formats LLM may output)
         type_aliases = {
             "official": ["official", "university", "governmentagency", "government"],
             "university": ["university", "official"],
@@ -755,7 +755,7 @@ Return JSON format (no markdown):
             "person": ["person", "student", "alumni"],
         }
         
-        # Track used agent indices per type，避免重复使用同一 agent
+        # Track used agent indices per type, avoid reusing the same agent
         used_indices: Dict[str, int] = {}
         
         updated_posts = []
@@ -788,7 +788,7 @@ Return JSON format (no markdown):
             
             # 3. If still not found，Use highest influence agent
             if matched_agent_id is None:
-                logger.warning(f"Type not found '{poster_type}'  matching Agent，使用影响力最高的 Agent")
+                logger.warning(f"Type not found '{poster_type}' matching Agent, using highest influence Agent")
                 if agent_configs:
                     # Sort by influence，Select highest influence
                     sorted_agents = sorted(agent_configs, key=lambda a: a.influence_weight, reverse=True)
@@ -901,11 +901,11 @@ Return JSON format (no markdown):
         return configs
     
     def _generate_agent_config_by_rule(self, entity: EntityNode) -> Dict[str, Any]:
-        """基于规则生成单 Agent configs（activity schedule）"""
+        """Generate single Agent config by rules (activity schedule)"""
         entity_type = (entity.get_entity_type() or "Unknown").lower()
         
         if entity_type in ["university", "governmentagency", "ngo"]:
-            # Official institutions：Active during work hours，Low frequency，High influence
+            # Official institutions:Active during work hours，Low frequency，High influence
             return {
                 "activity_level": 0.2,
                 "posts_per_hour": 0.1,
@@ -918,7 +918,7 @@ Return JSON format (no markdown):
                 "influence_weight": 3.0
             }
         elif entity_type in ["mediaoutlet"]:
-            # 媒体：Active all day，Medium frequency，High influence
+            # Media: Active all day, medium frequency, high influence
             return {
                 "activity_level": 0.5,
                 "posts_per_hour": 0.8,
@@ -931,7 +931,7 @@ Return JSON format (no markdown):
                 "influence_weight": 2.5
             }
         elif entity_type in ["professor", "expert", "official"]:
-            # Expert/Professor：Work + evening activity，Medium frequency
+            # Expert/Professor:Work + evening activity，Medium frequency
             return {
                 "activity_level": 0.4,
                 "posts_per_hour": 0.3,
@@ -944,7 +944,7 @@ Return JSON format (no markdown):
                 "influence_weight": 2.0
             }
         elif entity_type in ["student"]:
-            # Student：Mainly evening，High frequency
+            # Student:Mainly evening，High frequency
             return {
                 "activity_level": 0.8,
                 "posts_per_hour": 0.6,
@@ -957,7 +957,7 @@ Return JSON format (no markdown):
                 "influence_weight": 0.8
             }
         elif entity_type in ["alumni"]:
-            # Alumni：Mainly evening
+            # Alumni:Mainly evening
             return {
                 "activity_level": 0.6,
                 "posts_per_hour": 0.4,
@@ -970,7 +970,7 @@ Return JSON format (no markdown):
                 "influence_weight": 1.0
             }
         else:
-            # Regular person：Evening peak
+            # Regular person:Evening peak
             return {
                 "activity_level": 0.7,
                 "posts_per_hour": 0.5,

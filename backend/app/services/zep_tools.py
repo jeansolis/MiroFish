@@ -908,7 +908,7 @@ class ZepToolsService:
         """
         logger.info(f"Retrieving simulation context: {simulation_requirement[:50]}...")
         
-        # 搜索与Simulation requirement相关的info
+        # Search for info related to simulation requirement
         search_result = self.search_graph(
             graph_id=graph_id,
             query=simulation_requirement,

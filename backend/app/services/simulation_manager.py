@@ -339,10 +339,10 @@ class SimulationManager:
                 entities=filtered.entities,
                 use_llm=use_llm_for_profiles,
                 progress_callback=profile_progress,
-                graph_id=state.graph_id,  # 传入graph_id用于Zep检索
+                graph_id=state.graph_id,  # Pass graph_id for Zep search
                 parallel_count=parallel_profile_count,  # Parallel generation count
-                realtime_output_path=realtime_output_path,  # 实时保存path
-                output_platform=realtime_platform  # output格式
+                realtime_output_path=realtime_output_path,  # Real-time save path
+                output_platform=realtime_platform  # Output format
             )
             
             state.profiles_count = len(profiles)
@@ -418,7 +418,7 @@ class SimulationManager:
                     total=3
                 )
             
-            # 保存configfile
+            # Save config file
             config_path = os.path.join(sim_dir, "simulation_config.json")
             with open(config_path, 'w', encoding='utf-8') as f:
                 f.write(sim_params.to_json())
@@ -519,10 +519,10 @@ class SimulationManager:
                 "parallel": f"python {scripts_dir}/run_parallel_simulation.py --config {config_path}",
             },
             "instructions": (
-                f"1. 激活conda环境: conda activate MiroFish\n"
-                f"2. 运行模拟 (脚本位于 {scripts_dir}):\n"
-                f"   - 单独运行Twitter: python {scripts_dir}/run_twitter_simulation.py --config {config_path}\n"
-                f"   - 单独运行Reddit: python {scripts_dir}/run_reddit_simulation.py --config {config_path}\n"
-                f"   - 并行运行双平台: python {scripts_dir}/run_parallel_simulation.py --config {config_path}"
+                f"1. Activate conda environment: conda activate MiroFish\n"
+                f"2. Run simulation (scripts located at {scripts_dir}):\n"
+                f"   - Run Twitter only: python {scripts_dir}/run_twitter_simulation.py --config {config_path}\n"
+                f"   - Run Reddit only: python {scripts_dir}/run_reddit_simulation.py --config {config_path}\n"
+                f"   - Run dual-platform parallel: python {scripts_dir}/run_parallel_simulation.py --config {config_path}"
             )
         }
