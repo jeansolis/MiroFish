@@ -179,9 +179,9 @@
                 <span class="btn-text">Analysis Report</span>
               </button>
             </div>
-            <!-- 不可回放提示 -->
+            <!-- Non-replayable hint -->
             <div class="modal-playback-hint">
-              <span class="hint-text">Step3「开始模拟」与 Step5「深度互动」需在运行中启动，不支持历史回放</span>
+              <span class="hint-text">Step3 "Start Simulation" and Step5 "Deep Interaction" must be launched during runtime and do not support history replay</span>
             </div>
           </div>
         </div>
@@ -198,7 +198,7 @@ import { getSimulationHistory } from '../api/simulation'
 const router = useRouter()
 const route = useRoute()
 
-// 状态
+// State
 const projects = ref([])
 const loading = ref(true)
 const isExpanded = ref(false)
