@@ -340,9 +340,9 @@ class SimulationManager:
                 use_llm=use_llm_for_profiles,
                 progress_callback=profile_progress,
                 graph_id=state.graph_id,  # 传入graph_id用于Zep检索
-                parallel_count=parallel_profile_count,  # 并行生成数量
-                realtime_output_path=realtime_output_path,  # 实时保存路径
-                output_platform=realtime_platform  # 输出格式
+                parallel_count=parallel_profile_count,  # Parallel generation count
+                realtime_output_path=realtime_output_path,  # 实时保存path
+                output_platform=realtime_platform  # output格式
             )
             
             state.profiles_count = len(profiles)
@@ -380,7 +380,7 @@ class SimulationManager:
                     total=len(profiles)
                 )
             
-            # ========== 阶段3: LLMSmart generationSimulation configuration ==========
+            # ========== phase3: LLMSmart generationSimulation configuration ==========
             if progress_callback:
                 progress_callback(
                     "generating_config", 0, 
@@ -418,7 +418,7 @@ class SimulationManager:
                     total=3
                 )
             
-            # 保存配置文件
+            # 保存configfile
             config_path = os.path.join(sim_dir, "simulation_config.json")
             with open(config_path, 'w', encoding='utf-8') as f:
                 f.write(sim_params.to_json())

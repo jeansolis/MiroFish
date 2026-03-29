@@ -1067,7 +1067,7 @@ class ReportAgent:
 
         支持的格式（按优先级）：
         1. <tool_call>{"name": "tool_name", "parameters": {...}}</tool_call>
-        2. 裸 JSON（响应整体或单行就是一工具调用 JSON）
+        2. 裸 JSON（response整体或单行就 is a 工具调用 JSON）
         """
         tool_calls = []
 
@@ -1304,10 +1304,10 @@ class ReportAgent:
                 max_tokens=4096
             )
 
-            # Check if LLM returned None（API 异常或内容为空）
+            # Check if LLM returned None（API 异常或content为空）
             if response is None:
-                logger.warning(f"章节 {section.title} 第 {iteration + 1} 次迭代: LLM 返回 None")
-                # 如果Plus迭代次数，添加消息并重试
+                logger.warning(f"章节 {section.title} attempt {iteration + 1} 次迭代: LLM return None")
+                # ifPlus迭代次数，添加消息并重试
                 if iteration < max_iterations - 1:
                     messages.append({"role": "assistant", "content": "（Empty response）"})
                     messages.append({"role": "user", "content": "Please continue generating content."})
@@ -1315,19 +1315,19 @@ class ReportAgent:
                 # Last iteration also returned None，跳出循环进入强制收尾
                 break
 
-            logger.debug(f"LLM响应: {response[:200]}...")
+            logger.debug(f"LLMresponse: {response[:200]}...")
 
             # Parse once, reuse results
             tool_calls = self._parse_tool_calls(response)
             has_tool_calls = bool(tool_calls)
             has_final_answer = "Final Answer:" in response
 
-            # ── Conflict handling：LLM 同时输出了工具调用和 Final Answer ──
+            # ── Conflict handling：LLM 同时output了工具调用和 Final Answer ──
             if has_tool_calls and has_final_answer:
                 conflict_retries += 1
                 logger.warning(
-                    f"章节 {section.title} 第 {iteration+1} 轮: "
-                    f"LLM 同时输出工具调用和 Final Answer（第 {conflict_retries} 次冲突）"
+                    f"章节 {section.title} attempt {iteration+1} 轮: "
+                    f"LLM 同时output工具调用和 Final Answer（attempt {conflict_retries} 次冲突）"
                 )
 
                 if conflict_retries <= 2:
@@ -1338,8 +1338,8 @@ class ReportAgent:
                         "content": (
                             "【Format error】你在一次回复中同时包含了工具调用和 Final Answer，这是不允许的。\n"
                             "每次回复只能做以下两件事之一：\n"
-                            "- 调用一工具（输出一 <tool_call> 块，不要写 Final Answer）\n"
-                            "- 输出最终内容（以 'Final Answer:' 开头，不要包含 <tool_call>）\n"
+                            "- 调用一工具（output一 <tool_call> 块，不要写 Final Answer）\n"
+                            "- output最终content（以 'Final Answer:' 开头，不要包含 <tool_call>）\n"
                             "请重新回复，只做其中一件事。"
                         ),
                     })
@@ -1369,7 +1369,7 @@ class ReportAgent:
                     has_final_answer=has_final_answer
                 )
 
-            # ── Case 1：LLM 输出了 Final Answer ──
+            # ── Case 1：LLM output了 Final Answer ──
             if has_final_answer:
                 # Insufficient tool calls，Reject and request more tool calls
                 if tool_calls_count < min_tool_calls:
@@ -1483,9 +1483,9 @@ class ReportAgent:
                 })
                 continue
 
-            # Tool calls sufficient，LLM 输出了内容但没带 "Final Answer:" 前缀
+            # Tool calls sufficient，LLM output了content但没带 "Final Answer:" 前缀
             # Use this content directly as final answer，不再空转
-            logger.info(f"章节 {section.title} 未检测到 'Final Answer:' 前缀，直接采纳LLM输出作为最终内容（工具调用: {tool_calls_count}次）")
+            logger.info(f"章节 {section.title} 未检测到 'Final Answer:' 前缀，直接采纳LLMoutput作为最终content（工具调用: {tool_calls_count}次）")
             final_answer = response.strip()
 
             if self.report_logger:
@@ -1507,16 +1507,16 @@ class ReportAgent:
             max_tokens=4096
         )
 
-        # Check during forced completion LLM 返回是否为 None
+        # Check during forced completion LLM return是否为 None
         if response is None:
-            logger.error(f"章节 {section.title} 强制收尾时 LLM 返回 None，Use default error message")
+            logger.error(f"章节 {section.title} 强制收尾时 LLM return None，Use default error message")
             final_answer = f"（Section generation failed：LLM Returned empty response，Please retry later）"
         elif "Final Answer:" in response:
             final_answer = response.split("Final Answer:")[-1].strip()
         else:
             final_answer = response
         
-        # 记录章节内容Generation complete日志
+        # 记录章节contentGeneration complete日志
         if self.report_logger:
             self.report_logger.log_section_content(
                 section_title=section.title,
@@ -1548,7 +1548,7 @@ class ReportAgent:
         
         Args:
             progress_callback: Progress callback function (stage, progress, message)
-            report_id: Report ID（可选，如果不传Auto-generate）
+            report_id: Report ID（Options，if不传Auto-generate）
             
         Returns:
             Report: Complete report
@@ -1569,7 +1569,7 @@ class ReportAgent:
             created_at=datetime.now().isoformat()
         )
         
-        # Completed的Section title列表（For progress tracking）
+        # Completed的Section titlelist（For progress tracking）
         completed_section_titles = []
         
         try:
@@ -1694,10 +1694,10 @@ class ReportAgent:
             
             # Phase 3: 组装Complete report
             if progress_callback:
-                progress_callback("generating", 95, "正在组装Complete report...")
+                progress_callback("generating", 95, "currently组装Complete report...")
             
             ReportManager.update_progress(
-                report_id, "generating", 95, "正在组装Complete report...",
+                report_id, "generating", 95, "currently组装Complete report...",
                 completed_sections=completed_section_titles
             )
             
@@ -1855,7 +1855,7 @@ class ReportAgent:
             
             # Add results to messages
             messages.append({"role": "assistant", "content": response})
-            observation = "\n".join([f"[{r['tool']}结果]\n{r['result']}" for r in tool_results])
+            observation = "\n".join([f"[{r['tool']}result]\n{r['result']}" for r in tool_results])
             messages.append({
                 "role": "user",
                 "content": observation + CHAT_OBSERVATION_SUFFIX
@@ -1887,7 +1887,7 @@ class ReportManager:
     File structure（Output by section）：
     reports/
       {report_id}/
-        meta.json          - Report metadata和状态
+        meta.json          - Report metadata和status
         outline.json       - Report outline
         progress.json      - Generation progress
         section_01.md      - 第1章节
@@ -1918,12 +1918,12 @@ class ReportManager:
     
     @classmethod
     def _get_report_path(cls, report_id: str) -> str:
-        """RetrievedReport metadata文件路径"""
+        """RetrievedReport metadatafilepath"""
         return os.path.join(cls._get_report_folder(report_id), "meta.json")
     
     @classmethod
     def _get_report_markdown_path(cls, report_id: str) -> str:
-        """RetrievedComplete reportMarkdown文件路径"""
+        """RetrievedComplete reportMarkdownfilepath"""
         return os.path.join(cls._get_report_folder(report_id), "full_report.md")
     
     @classmethod
@@ -2160,7 +2160,7 @@ class ReportManager:
                 level = len(heading_match.group(1))
                 title_text = heading_match.group(2).strip()
                 
-                # 检查是否是与Section title重复的标题（Skip duplicates within first 5 lines）
+                # check是否是与Section title重复的title（Skip duplicates within first 5 lines）
                 if i < 5:
                     if title_text == section_title or title_text.replace(' ', '') == section_title.replace(' ', ''):
                         skip_next_empty = True
@@ -2204,7 +2204,7 @@ class ReportManager:
         completed_sections: List[str] = None
     ) -> None:
         """
-        更新报告Generation progress
+        update报告Generation progress
         
         Frontend can get real-time progress by reading progress.json
         """
@@ -2252,7 +2252,7 @@ class ReportManager:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
 
-                # 从文件名解析Section index
+                # 从file名解析Section index
                 parts = filename.replace('.md', '').split('_')
                 section_index = int(parts[1])
 
@@ -2269,7 +2269,7 @@ class ReportManager:
         """
         组装Complete report
         
-        从已保存的章节文件组装Complete report，And clean up titles
+        从saved的章节file组装Complete report，And clean up titles
         """
         folder = cls._get_report_folder(report_id)
         
@@ -2297,14 +2297,14 @@ class ReportManager:
     @classmethod
     def _post_process_report(cls, content: str, outline: ReportOutline) -> str:
         """
-        Post-process报告内容
+        Post-process报告content
         
         1. Remove duplicate titles
         2. Keep report main title(#)和Section title(##)，Remove other heading levels(###, ####等)
         3. Clean excess blank lines and separators
         
         Args:
-            content: 原始报告内容
+            content: 原始报告content
             outline: Report outline
             
         Returns:
@@ -2362,7 +2362,7 @@ class ReportManager:
                         processed_lines.append(line)
                         prev_was_heading = True
                     elif title in section_titles:
-                        # Section title错误使用了#，Corrected to##
+                        # Section titleerror使用了#，Corrected to##
                         processed_lines.append(f"## {title}")
                         prev_was_heading = True
                     else:
@@ -2381,7 +2381,7 @@ class ReportManager:
                         processed_lines.append("")
                         prev_was_heading = False
                 else:
-                    # ### And below级别的标题Convert to bold文本
+                    # ### And below级别的titleConvert to bold文本
                     processed_lines.append(f"**{title}**")
                     processed_lines.append("")
                     prev_was_heading = False
@@ -2548,10 +2548,10 @@ class ReportManager:
         
         folder_path = cls._get_report_folder(report_id)
         
-        # New format：删除整Folder
+        # New format：delete整Folder
         if os.path.exists(folder_path) and os.path.isdir(folder_path):
             shutil.rmtree(folder_path)
-            logger.info(f"报告Folder已删除: {report_id}")
+            logger.info(f"报告Folderdeleted: {report_id}")
             return True
         
         # Compatible with old format：Delete individual file

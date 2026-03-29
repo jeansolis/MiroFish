@@ -663,7 +663,7 @@ def get_single_section(report_id: str, section_index: int):
             "success": true,
             "data": {
                 "filename": "section_01.md",
-                "content": "## 执行摘要\\n\\n..."
+                "content": "## Executive Summary\\n\\n..."
             }
         }
     """

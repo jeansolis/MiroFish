@@ -201,12 +201,12 @@ class SimulationConfigGenerator:
     """
     Simulation configurationSmart generation器
     
-    使用LLM分析Simulation requirement、文档内容、图谱实体信息，
-    自动生成最佳的模拟参数配置
+    使用LLM分析Simulation requirement、文档content、图谱Entityinfo，
+    Auto-generate optimal simulation parameter configuration
     
     采用Step-by-step generation策略：
     1. Generate time config和Event config（轻量级）
-    2. 分批Generate Agent config（每批10-20）
+    2. 分批Generate Agent config（10-20 per batch）
     3. Generate platform config
     """
     
@@ -219,7 +219,7 @@ class SimulationConfigGenerator:
     TIME_CONFIG_CONTEXT_LENGTH = 10000   # Time config
     EVENT_CONFIG_CONTEXT_LENGTH = 8000   # Event config
     ENTITY_SUMMARY_LENGTH = 300          # Entity summary
-    AGENT_SUMMARY_LENGTH = 300           # Agent配置中的Entity summary
+    AGENT_SUMMARY_LENGTH = 300           # Agentconfig中的Entity summary
     ENTITIES_PER_TYPE_DISPLAY = 20       # Display count per entity type
     
     def __init__(
@@ -259,7 +259,7 @@ class SimulationConfigGenerator:
             simulation_id: Simulation ID
             project_id: Project ID
             graph_id: Graph ID
-            simulation_requirement: Simulation requirement描述
+            simulation_requirement: Simulation requirementdescription
             document_text: Original document content
             entities: Filtered entity list
             enable_twitter: Whether to enable Twitter
@@ -273,7 +273,7 @@ class SimulationConfigGenerator:
         
         # Calculate total steps
         num_batches = math.ceil(len(entities) / self.AGENTS_PER_BATCH)
-        total_steps = 3 + num_batches  # Time config + Event config + N批Agent + 平台配置
+        total_steps = 3 + num_batches  # Time config + Event config + N批Agent + Platform config
         current_step = 0
         
         def report_progress(step: int, message: str):
@@ -325,7 +325,7 @@ class SimulationConfigGenerator:
             )
             all_agent_configs.extend(batch_configs)
         
-        reasoning_parts.append(f"Agent配置: Success生成 {len(all_agent_configs)} ")
+        reasoning_parts.append(f"Agentconfig: Success生成 {len(all_agent_configs)} ")
         
         # ========== Assign publishers to initial posts Agent ==========
         logger.info("Assign appropriate publisher Agents to initial posts...")
@@ -392,7 +392,7 @@ class SimulationConfigGenerator:
         # Build context
         context_parts = [
             f"## Simulation requirement\n{simulation_requirement}",
-            f"\n## 实体信息 ({len(entities)})\n{entity_summary}",
+            f"\n## Entityinfo ({len(entities)})\n{entity_summary}",
         ]
         
         current_length = sum(len(p) for p in context_parts)
@@ -420,7 +420,7 @@ class SimulationConfigGenerator:
         
         for entity_type, type_entities in by_type.items():
             lines.append(f"\n### {entity_type} ({len(type_entities)})")
-            # 使用配置的显示数量和摘要长度
+            # 使用config的显示数量和summary长度
             display_count = self.ENTITIES_PER_TYPE_DISPLAY
             summary_len = self.ENTITY_SUMMARY_LENGTH
             for e in type_entities[:display_count]:
@@ -456,7 +456,7 @@ class SimulationConfigGenerator:
                 
                 # Check if truncated
                 if finish_reason == 'length':
-                    logger.warning(f"LLM输出truncated (attempt {attempt+1})")
+                    logger.warning(f"LLMoutputtruncated (attempt {attempt+1})")
                     content = self._fix_truncated_json(content)
                 
                 # Try to parse JSON
@@ -499,7 +499,7 @@ class SimulationConfigGenerator:
         return content
     
     def _try_fix_config_json(self, content: str) -> Optional[Dict[str, Any]]:
-        """Try to fix配置JSON"""
+        """Try to fixconfigJSON"""
         import re
         
         # 修复truncated的情况
