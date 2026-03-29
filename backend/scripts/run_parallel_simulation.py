@@ -840,7 +840,7 @@ def _enrich_action_context(
                     action_args['comment_content'] = comment_info.get('content', '')
                     action_args['comment_author_name'] = comment_info.get('author_name', '')
         
-        # 发表评论：补充所评论的帖子信息
+        # Create comment: add the commented post's information
         elif action_type == 'CREATE_COMMENT':
             post_id = action_args.get('post_id')
             if post_id:
@@ -850,8 +850,8 @@ def _enrich_action_context(
                     action_args['post_author_name'] = post_info.get('author_name', '')
     
     except Exception as e:
-        # 补充上下文失败不影响主流程
-        print(f"补充动作上下文失败: {e}")
+        # Failure to enrich context does not affect the main flow
+        print(f"Failed to enrich action context: {e}")
 
 
 def _get_post_info(
@@ -860,15 +860,15 @@ def _get_post_info(
     agent_names: Dict[int, str]
 ) -> Optional[Dict[str, str]]:
     """
-    获取帖子信息
-    
+    Get post information.
+
     Args:
-        cursor: 数据库游标
-        post_id: 帖子ID
-        agent_names: agent_id -> agent_name 映射
-        
+        cursor: Database cursor
+        post_id: Post ID
+        agent_names: agent_id -> agent_name mapping
+
     Returns:
-        包含 content 和 author_name 的字典，或 None
+        A dict containing content and author_name, or None
     """
     try:
         cursor.execute("""
@@ -883,17 +883,17 @@ def _get_post_info(
             user_id = row[1]
             agent_id = row[2]
             
-            # 优先使用 agent_names 中的名称
+            # Prefer names from agent_names
             author_name = ''
             if agent_id is not None and agent_id in agent_names:
                 author_name = agent_names[agent_id]
             elif user_id:
-                # 从 user 表获取名称
+                # Get name from the user table
                 cursor.execute("SELECT name, user_name FROM user WHERE user_id = ?", (user_id,))
                 user_row = cursor.fetchone()
                 if user_row:
                     author_name = user_row[0] or user_row[1] or ''
-            
+
             return {'content': content, 'author_name': author_name}
     except Exception:
         pass
@@ -906,15 +906,15 @@ def _get_user_name(
     agent_names: Dict[int, str]
 ) -> Optional[str]:
     """
-    获取用户名称
-    
+    Get user name.
+
     Args:
-        cursor: 数据库游标
-        user_id: 用户ID
-        agent_names: agent_id -> agent_name 映射
-        
+        cursor: Database cursor
+        user_id: User ID
+        agent_names: agent_id -> agent_name mapping
+
     Returns:
-        用户名称，或 None
+        User name, or None
     """
     try:
         cursor.execute("""
