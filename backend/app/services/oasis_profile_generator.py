@@ -26,8 +26,8 @@ logger = get_logger('mirofish.oasis_profile')
 
 
 @dataclass
-class Oasis AgentsProfile:
-    """OASIS  Agents Profile data structure"""
+class OasisAgentProfile:
+    """OASIS Agent Profile data structure"""
     # Common fields
     user_id: int
     user_name: str
@@ -213,7 +213,7 @@ class OasisProfileGenerator:
         entity: EntityNode, 
         user_id: int,
         use_llm: bool = True
-    ) -> Oasis AgentsProfile:
+    ) -> OasisAgentProfile:
         """
         Generate OASIS  Agents Profile from Zep entity
         
@@ -223,7 +223,7 @@ class OasisProfileGenerator:
             use_llm: Whether to use LLM for detailed persona generation
             
         Returns:
-            Oasis AgentsProfile
+            OasisAgentProfile
         """
         entity_type = entity.get_entity_type() or "Entity"
         
@@ -252,7 +252,7 @@ class OasisProfileGenerator:
                 entity_attributes=entity.attributes
             )
         
-        return Oasis AgentsProfile(
+        return OasisAgentProfile(
             user_id=user_id,
             user_name=user_name,
             name=name,
@@ -854,7 +854,7 @@ Important:
         parallel_count: int = 5,
         realtime_output_path: Optional[str] = None,
         output_platform: str = "reddit"
-    ) -> List[Oasis AgentsProfile]:
+    ) -> List[OasisAgentProfile]:
         """
         Batch generate  Agents Profiles from entities (supports parallel generation)
         
@@ -932,7 +932,7 @@ Important:
             except Exception as e:
                 logger.error(f"Generate entity {entity.name}  persona failed: {str(e)}")
                 # Create a basic profile
-                fallback_profile = Oasis AgentsProfile(
+                fallback_profile = OasisAgentProfile(
                     user_id=idx,
                     user_name=self._generate_username(entity.name),
                     name=entity.name,
@@ -988,7 +988,7 @@ Important:
                     logger.error(f"Processing entity {entity.name}  encountered exception: {str(e)}")
                     with lock:
                         completed_count[0] += 1
-                    profiles[idx] = Oasis AgentsProfile(
+                    profiles[idx] = OasisAgentProfile(
                         user_id=idx,
                         user_name=self._generate_username(entity.name),
                         name=entity.name,
@@ -1006,7 +1006,7 @@ Important:
         
         return profiles
     
-    def _print_generated_profile(self, entity_name: str, entity_type: str, profile: Oasis AgentsProfile):
+    def _print_generated_profile(self, entity_name: str, entity_type: str, profile: OasisAgentProfile):
         """Real-time output generated persona to console (full content, no truncation)"""
         separator = "-" * 70
         
@@ -1039,7 +1039,7 @@ Important:
     
     def save_profiles(
         self,
-        profiles: List[Oasis AgentsProfile],
+        profiles: List[OasisAgentProfile],
         file_path: str,
         platform: str = "reddit"
     ):
@@ -1060,7 +1060,7 @@ Important:
         else:
             self._save_reddit_json(profiles, file_path)
     
-    def _save_twitter_csv(self, profiles: List[Oasis AgentsProfile], file_path: str):
+    def _save_twitter_csv(self, profiles: List[OasisAgentProfile], file_path: str):
         """
         Save Twitter profiles as CSV format (OASIS official requirements)
         
@@ -1136,7 +1136,7 @@ Important:
         
         return gender_map.get(gender_lower, "other")
     
-    def _save_reddit_json(self, profiles: List[Oasis AgentsProfile], file_path: str):
+    def _save_reddit_json(self, profiles: List[OasisAgentProfile], file_path: str):
         """
         Save Reddit profiles as JSON format
         
@@ -1188,7 +1188,7 @@ Important:
     # Keep old method name as alias for backward compatibility
     def save_profiles_to_json(
         self,
-        profiles: List[Oasis AgentsProfile],
+        profiles: List[OasisAgentProfile],
         file_path: str,
         platform: str = "reddit"
     ):
